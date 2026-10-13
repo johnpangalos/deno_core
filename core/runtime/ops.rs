@@ -664,6 +664,10 @@ mod tests {
       op_smi_to_from_v8,
       op_number_to_from_v8,
       op_bool_to_from_v8,
+      op_webidl_f64,
+      op_webidl_state,
+      op_webidl_async,
+      op_webidl_dict,
     ],
     state = |state| {
       state.put(1234u32);
@@ -2499,6 +2503,144 @@ mod tests {
     assert_eq!(
       err.to_string(),
       "TypeError: Expected boolean\n    at <anonymous>:4:7"
+    );
+    Ok(())
+  }
+
+  #[derive(crate::WebIDL)]
+  #[webidl(dictionary)]
+  pub struct WebIdlDict {
+    #[webidl(required)]
+    foo_bar: u8,
+  }
+
+  #[op2]
+  pub fn op_webidl_f64(#[webidl] value: f64) -> f64 {
+    value
+  }
+
+  #[op2]
+  pub fn op_webidl_state(#[state] _state: &u32, #[webidl] value: f64) -> f64 {
+    value
+  }
+
+  #[op2(async)]
+  pub async fn op_webidl_async(#[webidl] value: f64) -> f64 {
+    value
+  }
+
+  #[op2]
+  pub fn op_webidl_dict(#[webidl] dict: WebIdlDict) -> u8 {
+    dict.foo_bar
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_ok() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_f64",
+      r"
+        const ops = Deno.core.ops;
+        assert(ops.op_webidl_f64('1.5') === 1.5);
+        assert(ops.op_webidl_f64(null) === 0);
+        assert(ops.op_webidl_state(2) === 2);
+        assert(ops.op_webidl_dict({ fooBar: 3 }) === 3);
+        assert(ops.op_webidl_dict({ fooBar: 3, extra: 1 }) === 3);
+      ",
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_error_is_type_error(
+  ) -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_f64",
+      r"
+        try {
+          Deno.core.ops.op_webidl_f64(NaN);
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assertErrorContains(e, 'Argument 1 is not a finite number');
+        }
+      ",
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_error_message(
+  ) -> Result<(), Box<dyn std::error::Error>> {
+    let err = run_test2(
+      1,
+      "op_webidl_f64",
+      r"
+      Deno.core.ops.op_webidl_f64(NaN);
+      ",
+    )
+    .unwrap_err();
+    assert_eq!(
+      err.to_string(),
+      "TypeError: Failed to execute 'op_webidl_f64': Argument 1 is not a finite number\n    at <anonymous>:4:21"
+    );
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_error_arg_index_after_state(
+  ) -> Result<(), Box<dyn std::error::Error>> {
+    let err = run_test2(
+      1,
+      "op_webidl_state",
+      r"
+      Deno.core.ops.op_webidl_state(NaN);
+      ",
+    )
+    .unwrap_err();
+    assert_eq!(
+      err.to_string(),
+      "TypeError: Failed to execute 'op_webidl_state': Argument 1 is not a finite number\n    at <anonymous>:4:21"
+    );
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_error_async(
+  ) -> Result<(), Box<dyn std::error::Error>> {
+    // Async op stubs deliver exceptions as promise rejections.
+    run_async_test(
+      1,
+      "op_webidl_async",
+      r#"
+      try {
+        await Deno.core.ops.op_webidl_async(Infinity);
+        assert(false);
+      } catch (e) {
+        assert(e instanceof TypeError);
+        assertErrorContains(e, "Failed to execute 'op_webidl_async': Argument 1 is not a finite number");
+      }
+      "#,
+    )
+    .await?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_error_dictionary(
+  ) -> Result<(), Box<dyn std::error::Error>> {
+    let err = run_test2(
+      1,
+      "op_webidl_dict",
+      r"
+      Deno.core.ops.op_webidl_dict({});
+      ",
+    )
+    .unwrap_err();
+    assert_eq!(
+      err.to_string(),
+      "TypeError: Failed to execute 'op_webidl_dict': Argument 1 can not be converted to 'WebIdlDict' because 'fooBar' is required in 'WebIdlDict'\n    at <anonymous>:4:21"
     );
     Ok(())
   }

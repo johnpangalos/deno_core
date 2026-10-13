@@ -5,6 +5,8 @@ use proc_macro2::TokenStream;
 #[derive(Clone)]
 pub struct GeneratorState {
   pub name: Ident,
+  /// The name of the original (Rust) function, as opposed to the `call` name above.
+  pub orig_name: Ident,
   /// Identifiers for each of the arguments of the original function
   pub args: Vec<Ident>,
   /// The result of the `call` function

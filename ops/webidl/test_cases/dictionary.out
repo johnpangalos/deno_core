@@ -1,0 +1,209 @@
+impl<'a> deno_core::webidl::WebIdlConverter<'a> for RenameAndDefault {
+    type Options = ();
+    fn convert<C>(
+        scope: &mut deno_core::v8::HandleScope<'a>,
+        value: deno_core::v8::Local<'a, deno_core::v8::Value>,
+        prefix: std::borrow::Cow<'static, str>,
+        context: C,
+        options: &Self::Options,
+    ) -> std::result::Result<Self, deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> std::borrow::Cow<'static, str>,
+    {
+        let _ = options;
+        let dictionary = deno_core::webidl::dictionary_object(
+            value,
+            "RenameAndDefault",
+            &prefix,
+            &context,
+        )?;
+        let __webidl_member_1: u8 = match deno_core::webidl::dictionary_member(
+            scope,
+            dictionary,
+            "barBaz",
+            &prefix,
+            &context,
+        )? {
+            std::option::Option::Some(value) => {
+                let options: <u8 as deno_core::webidl::WebIdlConverter<'a>>::Options = std::default::Default::default();
+                let member_context = || -> std::borrow::Cow<'static, str> {
+                    std::format!("'barBaz' of 'RenameAndDefault' ({})", context()).into()
+                };
+                <u8 as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(scope, value, prefix.clone(), member_context, &options)?
+            }
+            std::option::Option::None => 3,
+        };
+        let __webidl_member_0: u8 = match deno_core::webidl::dictionary_member(
+            scope,
+            dictionary,
+            "renamed",
+            &prefix,
+            &context,
+        )? {
+            std::option::Option::Some(value) => {
+                let options: <u8 as deno_core::webidl::WebIdlConverter<'a>>::Options = std::default::Default::default();
+                let member_context = || -> std::borrow::Cow<'static, str> {
+                    std::format!("'renamed' of 'RenameAndDefault' ({})", context())
+                        .into()
+                };
+                <u8 as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(scope, value, prefix.clone(), member_context, &options)?
+            }
+            std::option::Option::None => {
+                return std::result::Result::Err(
+                    deno_core::webidl::missing_dictionary_member(
+                        &prefix,
+                        &context,
+                        "RenameAndDefault",
+                        "renamed",
+                    ),
+                );
+            }
+        };
+        std::result::Result::Ok(RenameAndDefault {
+            foo: __webidl_member_0,
+            bar_baz: __webidl_member_1,
+        })
+    }
+}
+
+impl<'a> deno_core::webidl::WebIdlConverter<'a> for RequiredAndOptions {
+    type Options = ();
+    fn convert<C>(
+        scope: &mut deno_core::v8::HandleScope<'a>,
+        value: deno_core::v8::Local<'a, deno_core::v8::Value>,
+        prefix: std::borrow::Cow<'static, str>,
+        context: C,
+        options: &Self::Options,
+    ) -> std::result::Result<Self, deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> std::borrow::Cow<'static, str>,
+    {
+        let _ = options;
+        let dictionary = deno_core::webidl::dictionary_object(
+            value,
+            "RequiredAndOptions",
+            &prefix,
+            &context,
+        )?;
+        let __webidl_member_2: Option<u8> = match deno_core::webidl::dictionary_member(
+            scope,
+            dictionary,
+            "clamped",
+            &prefix,
+            &context,
+        )? {
+            std::option::Option::Some(value) => {
+                let mut options: <Option<
+                    u8,
+                > as deno_core::webidl::WebIdlConverter<'a>>::Options = std::default::Default::default();
+                options.clamp = true;
+                let member_context = || -> std::borrow::Cow<'static, str> {
+                    std::format!("'clamped' of 'RequiredAndOptions' ({})", context())
+                        .into()
+                };
+                <Option<
+                    u8,
+                > as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(scope, value, prefix.clone(), member_context, &options)?
+            }
+            std::option::Option::None => ::std::option::Option::None,
+        };
+        let __webidl_member_0: String = match deno_core::webidl::dictionary_member(
+            scope,
+            dictionary,
+            "fooBar",
+            &prefix,
+            &context,
+        )? {
+            std::option::Option::Some(value) => {
+                let options: <String as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::Options = std::default::Default::default();
+                let member_context = || -> std::borrow::Cow<'static, str> {
+                    std::format!("'fooBar' of 'RequiredAndOptions' ({})", context())
+                        .into()
+                };
+                <String as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(scope, value, prefix.clone(), member_context, &options)?
+            }
+            std::option::Option::None => {
+                return std::result::Result::Err(
+                    deno_core::webidl::missing_dictionary_member(
+                        &prefix,
+                        &context,
+                        "RequiredAndOptions",
+                        "fooBar",
+                    ),
+                );
+            }
+        };
+        let __webidl_member_1: Option<String> = match deno_core::webidl::dictionary_member(
+            scope,
+            dictionary,
+            "maybe",
+            &prefix,
+            &context,
+        )? {
+            std::option::Option::Some(value) => {
+                let options: <Option<
+                    String,
+                > as deno_core::webidl::WebIdlConverter<'a>>::Options = std::default::Default::default();
+                let member_context = || -> std::borrow::Cow<'static, str> {
+                    std::format!("'maybe' of 'RequiredAndOptions' ({})", context())
+                        .into()
+                };
+                <Option<
+                    String,
+                > as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(scope, value, prefix.clone(), member_context, &options)?
+            }
+            std::option::Option::None => ::std::option::Option::None,
+        };
+        let __webidl_member_3: Vec<u16> = match deno_core::webidl::dictionary_member(
+            scope,
+            dictionary,
+            "ranged",
+            &prefix,
+            &context,
+        )? {
+            std::option::Option::Some(value) => {
+                let mut options: <Vec<
+                    u16,
+                > as deno_core::webidl::WebIdlConverter<'a>>::Options = std::default::Default::default();
+                options.enforce_range = true;
+                let member_context = || -> std::borrow::Cow<'static, str> {
+                    std::format!("'ranged' of 'RequiredAndOptions' ({})", context())
+                        .into()
+                };
+                <Vec<
+                    u16,
+                > as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(scope, value, prefix.clone(), member_context, &options)?
+            }
+            std::option::Option::None => {
+                return std::result::Result::Err(
+                    deno_core::webidl::missing_dictionary_member(
+                        &prefix,
+                        &context,
+                        "RequiredAndOptions",
+                        "ranged",
+                    ),
+                );
+            }
+        };
+        std::result::Result::Ok(RequiredAndOptions {
+            foo_bar: __webidl_member_0,
+            maybe: __webidl_member_1,
+            clamped: __webidl_member_2,
+            ranged: __webidl_member_3,
+        })
+    }
+}

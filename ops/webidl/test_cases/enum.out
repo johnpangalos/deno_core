@@ -1,0 +1,41 @@
+impl<'a> deno_core::webidl::WebIdlConverter<'a> for Method {
+    type Options = ();
+    fn convert<C>(
+        scope: &mut deno_core::v8::HandleScope<'a>,
+        value: deno_core::v8::Local<'a, deno_core::v8::Value>,
+        prefix: std::borrow::Cow<'static, str>,
+        context: C,
+        options: &Self::Options,
+    ) -> std::result::Result<Self, deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> std::borrow::Cow<'static, str>,
+    {
+        let _ = options;
+        let string = <String as deno_core::webidl::WebIdlConverter<
+            'a,
+        >>::convert(
+            scope,
+            value,
+            prefix.clone(),
+            || context(),
+            &std::default::Default::default(),
+        )?;
+        match string.as_str() {
+            "foo-bar" => std::result::Result::Ok(Method::FooBar),
+            "PATCH" => std::result::Result::Ok(Method::Patch),
+            "http-method" => std::result::Result::Ok(Method::HTTPMethod),
+            _ => {
+                std::result::Result::Err(
+                    deno_core::webidl::WebIdlError::new(
+                        prefix,
+                        context(),
+                        deno_core::webidl::WebIdlErrorKind::InvalidEnumValue {
+                            enum_name: "Method",
+                            value: string,
+                        },
+                    ),
+                )
+            }
+        }
+    }
+}

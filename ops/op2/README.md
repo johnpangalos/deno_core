@@ -589,6 +589,20 @@ any
 <td>
 
 ```text
+#[webidl] T
+```
+
+</td><td>
+
+</td><td>
+any
+</td><td>
+Converted with `WebIdlConverter`, slow path only. Accepts any type.
+</td></tr>
+<tr>
+<td>
+
+```text
 #[arraybuffer] &mut [u8]
 ```
 
@@ -924,6 +938,26 @@ Only usable in `deno_core`.
 </table>
 
 <!-- END ARGS -->
+
+## `#[webidl]` arguments
+
+`#[webidl]` converts an argument with `deno_core::webidl::WebIdlConverter`,
+following the WebIDL JavaScript-to-IDL type mapping. It accepts any type,
+including ones `op2` handles natively such as `String`, `u32`, or `Vec<u8>`,
+and types derived with `#[derive(WebIDL)]` (see below). Like `#[from_v8]`, the
+op is slow-only and cannot be `fast`.
+
+On failure the op throws a `TypeError` whose message is the `WebIdlError`, for
+example `Failed to execute 'op_foo': Argument 1 is not a finite number`.
+Argument numbers count only JavaScript arguments, so `#[state]` parameters do
+not shift them. `#[webidl]` is not valid on return values.
+
+## `#[derive(WebIDL)]`
+
+`#[derive(WebIDL)]` (re-exported as `deno_core::WebIDL`) implements
+`WebIdlConverter` for a dictionary (`#[webidl(dictionary)]` on a struct) or an
+enum (`#[webidl(enum)]`). See `ops/webidl/README.md` for the member and enum
+rules.
 
 # Return Values
 
