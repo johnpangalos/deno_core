@@ -5,6 +5,18 @@ use proc_macro::TokenStream;
 use std::error::Error;
 
 mod op2;
+mod webidl;
+
+/// Derives `deno_core::webidl::WebIdlConverter` for a dictionary (a struct
+/// marked `#[webidl(dictionary)]`) or an enum of unit variants (marked
+/// `#[webidl(enum)]`). See the `deno_core::webidl` module docs.
+#[proc_macro_derive(WebIDL, attributes(webidl, options))]
+pub fn webidl_derive(item: TokenStream) -> TokenStream {
+  match crate::webidl::webidl(item.into()) {
+    Ok(output) => output.into(),
+    Err(err) => err.to_compile_error().into(),
+  }
+}
 
 /// A macro designed to provide an extremely fast V8->Rust interface layer.
 #[doc = include_str!("op2/README.md")]

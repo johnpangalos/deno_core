@@ -1,0 +1,525 @@
+impl<'a> deno_core::webidl::WebIdlConverter<'a> for Mode {
+    type Options = ();
+    fn convert<C>(
+        scope: &mut deno_core::v8::HandleScope<'a>,
+        value: deno_core::v8::Local<'a, deno_core::v8::Value>,
+        prefix: ::std::borrow::Cow<'static, str>,
+        context: C,
+        options: &Self::Options,
+    ) -> ::std::result::Result<Self, deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        let _ = options;
+        let string = <::std::string::String as deno_core::webidl::WebIdlConverter<
+            'a,
+        >>::convert(
+            scope,
+            value,
+            prefix.clone(),
+            &context,
+            &::std::default::Default::default(),
+        )?;
+        match string.as_str() {
+            "foo-bar" => ::std::result::Result::Ok(Self::FooBar),
+            "a" => ::std::result::Result::Ok(Self::A),
+            "http2-only" => ::std::result::Result::Ok(Self::Http2Only),
+            "custom" => ::std::result::Result::Ok(Self::Renamed),
+            _ => {
+                ::std::result::Result::Err(
+                    deno_core::webidl::_derive::invalid_enum_value(
+                        &prefix,
+                        &context,
+                        &string,
+                        "Mode",
+                    ),
+                )
+            }
+        }
+    }
+}
+
+impl<'a> deno_core::webidl::WebIdlConverter<'a> for Nested {
+    type Options = ();
+    fn convert<C>(
+        scope: &mut deno_core::v8::HandleScope<'a>,
+        value: deno_core::v8::Local<'a, deno_core::v8::Value>,
+        prefix: ::std::borrow::Cow<'static, str>,
+        context: C,
+        options: &Self::Options,
+    ) -> ::std::result::Result<Self, deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        let _ = options;
+        let object = deno_core::webidl::_derive::dictionary_object(
+            value,
+            &prefix,
+            &context,
+        )?;
+        let __webidl_member_inner_value = {
+            let member_context = || {
+                deno_core::webidl::_derive::member_context(
+                    "innerValue",
+                    "Nested",
+                    &context,
+                )
+            };
+            let value = deno_core::webidl::_derive::dictionary_member(
+                scope,
+                object,
+                "innerValue",
+                &prefix,
+                &member_context,
+            )?;
+            if value.is_undefined() {
+                return ::std::result::Result::Err(
+                    deno_core::webidl::_derive::required_member(&prefix, &member_context),
+                )
+            } else {
+                let member_options = <<u8 as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::Options as ::std::default::Default>::default();
+                <u8 as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    value,
+                    prefix.clone(),
+                    &member_context,
+                    &member_options,
+                )?
+            }
+        };
+        let _ = object;
+        ::std::result::Result::Ok(Self {
+            inner_value: __webidl_member_inner_value,
+        })
+    }
+}
+
+impl<'a> deno_core::webidl::WebIdlConverter<'a> for Dictionary {
+    type Options = ();
+    fn convert<C>(
+        scope: &mut deno_core::v8::HandleScope<'a>,
+        value: deno_core::v8::Local<'a, deno_core::v8::Value>,
+        prefix: ::std::borrow::Cow<'static, str>,
+        context: C,
+        options: &Self::Options,
+    ) -> ::std::result::Result<Self, deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        let _ = options;
+        let object = deno_core::webidl::_derive::dictionary_object(
+            value,
+            &prefix,
+            &context,
+        )?;
+        let __webidl_member_clamped = {
+            let member_context = || {
+                deno_core::webidl::_derive::member_context(
+                    "clamped",
+                    "Dictionary",
+                    &context,
+                )
+            };
+            let value = deno_core::webidl::_derive::dictionary_member(
+                scope,
+                object,
+                "clamped",
+                &prefix,
+                &member_context,
+            )?;
+            if value.is_undefined() {
+                return ::std::result::Result::Err(
+                    deno_core::webidl::_derive::required_member(&prefix, &member_context),
+                )
+            } else {
+                #[allow(clippy::field_reassign_with_default)]
+                let member_options = {
+                    let mut member_options = <<u8 as deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::Options as ::std::default::Default>::default();
+                    member_options.clamp = true;
+                    member_options
+                };
+                <u8 as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    value,
+                    prefix.clone(),
+                    &member_context,
+                    &member_options,
+                )?
+            }
+        };
+        let __webidl_member_clamped_default = {
+            let member_context = || {
+                deno_core::webidl::_derive::member_context(
+                    "clampedDefault",
+                    "Dictionary",
+                    &context,
+                )
+            };
+            let value = deno_core::webidl::_derive::dictionary_member(
+                scope,
+                object,
+                "clampedDefault",
+                &prefix,
+                &member_context,
+            )?;
+            if value.is_undefined() {
+                7
+            } else {
+                #[allow(clippy::field_reassign_with_default)]
+                let member_options = {
+                    let mut member_options = <<u8 as deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::Options as ::std::default::Default>::default();
+                    member_options.clamp = true;
+                    member_options
+                };
+                <u8 as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    value,
+                    prefix.clone(),
+                    &member_context,
+                    &member_options,
+                )?
+            }
+        };
+        let __webidl_member_renamed = {
+            let member_context = || {
+                deno_core::webidl::_derive::member_context(
+                    "customKey",
+                    "Dictionary",
+                    &context,
+                )
+            };
+            let value = deno_core::webidl::_derive::dictionary_member(
+                scope,
+                object,
+                "customKey",
+                &prefix,
+                &member_context,
+            )?;
+            if value.is_undefined() {
+                3
+            } else {
+                let member_options = <<u8 as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::Options as ::std::default::Default>::default();
+                <u8 as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    value,
+                    prefix.clone(),
+                    &member_context,
+                    &member_options,
+                )?
+            }
+        };
+        let __webidl_member_enforced = {
+            let member_context = || {
+                deno_core::webidl::_derive::member_context(
+                    "enforced",
+                    "Dictionary",
+                    &context,
+                )
+            };
+            let value = deno_core::webidl::_derive::dictionary_member(
+                scope,
+                object,
+                "enforced",
+                &prefix,
+                &member_context,
+            )?;
+            if value.is_undefined() {
+                None
+            } else {
+                #[allow(clippy::field_reassign_with_default)]
+                let member_options = {
+                    let mut member_options = <<Option<
+                        u8,
+                    > as deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::Options as ::std::default::Default>::default();
+                    member_options.enforce_range = true;
+                    member_options
+                };
+                <Option<
+                    u8,
+                > as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    value,
+                    prefix.clone(),
+                    &member_context,
+                    &member_options,
+                )?
+            }
+        };
+        let __webidl_member_foo_bar = {
+            let member_context = || {
+                deno_core::webidl::_derive::member_context(
+                    "fooBar",
+                    "Dictionary",
+                    &context,
+                )
+            };
+            let value = deno_core::webidl::_derive::dictionary_member(
+                scope,
+                object,
+                "fooBar",
+                &prefix,
+                &member_context,
+            )?;
+            if value.is_undefined() {
+                return ::std::result::Result::Err(
+                    deno_core::webidl::_derive::required_member(&prefix, &member_context),
+                )
+            } else {
+                let member_options = <<u8 as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::Options as ::std::default::Default>::default();
+                <u8 as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    value,
+                    prefix.clone(),
+                    &member_context,
+                    &member_options,
+                )?
+            }
+        };
+        let __webidl_member_maybe = {
+            let member_context = || {
+                deno_core::webidl::_derive::member_context(
+                    "maybe",
+                    "Dictionary",
+                    &context,
+                )
+            };
+            let value = deno_core::webidl::_derive::dictionary_member(
+                scope,
+                object,
+                "maybe",
+                &prefix,
+                &member_context,
+            )?;
+            if value.is_undefined() {
+                None
+            } else {
+                let member_options = <<Option<
+                    String,
+                > as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::Options as ::std::default::Default>::default();
+                <Option<
+                    String,
+                > as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    value,
+                    prefix.clone(),
+                    &member_context,
+                    &member_options,
+                )?
+            }
+        };
+        let __webidl_member_mode = {
+            let member_context = || {
+                deno_core::webidl::_derive::member_context(
+                    "mode",
+                    "Dictionary",
+                    &context,
+                )
+            };
+            let value = deno_core::webidl::_derive::dictionary_member(
+                scope,
+                object,
+                "mode",
+                &prefix,
+                &member_context,
+            )?;
+            if value.is_undefined() {
+                Mode::A
+            } else {
+                let member_options = <<Mode as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::Options as ::std::default::Default>::default();
+                <Mode as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    value,
+                    prefix.clone(),
+                    &member_context,
+                    &member_options,
+                )?
+            }
+        };
+        let __webidl_member_nested = {
+            let member_context = || {
+                deno_core::webidl::_derive::member_context(
+                    "nested",
+                    "Dictionary",
+                    &context,
+                )
+            };
+            let value = deno_core::webidl::_derive::dictionary_member(
+                scope,
+                object,
+                "nested",
+                &prefix,
+                &member_context,
+            )?;
+            if value.is_undefined() {
+                return ::std::result::Result::Err(
+                    deno_core::webidl::_derive::required_member(&prefix, &member_context),
+                )
+            } else {
+                let member_options = <<Nested as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::Options as ::std::default::Default>::default();
+                <Nested as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    value,
+                    prefix.clone(),
+                    &member_context,
+                    &member_options,
+                )?
+            }
+        };
+        let __webidl_member_renamed_required = {
+            let member_context = || {
+                deno_core::webidl::_derive::member_context(
+                    "renamedRequired",
+                    "Dictionary",
+                    &context,
+                )
+            };
+            let value = deno_core::webidl::_derive::dictionary_member(
+                scope,
+                object,
+                "renamedRequired",
+                &prefix,
+                &member_context,
+            )?;
+            if value.is_undefined() {
+                return ::std::result::Result::Err(
+                    deno_core::webidl::_derive::required_member(&prefix, &member_context),
+                )
+            } else {
+                let member_options = <<Option<
+                    u8,
+                > as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::Options as ::std::default::Default>::default();
+                <Option<
+                    u8,
+                > as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    value,
+                    prefix.clone(),
+                    &member_context,
+                    &member_options,
+                )?
+            }
+        };
+        let __webidl_member_required = {
+            let member_context = || {
+                deno_core::webidl::_derive::member_context(
+                    "required",
+                    "Dictionary",
+                    &context,
+                )
+            };
+            let value = deno_core::webidl::_derive::dictionary_member(
+                scope,
+                object,
+                "required",
+                &prefix,
+                &member_context,
+            )?;
+            if value.is_undefined() {
+                return ::std::result::Result::Err(
+                    deno_core::webidl::_derive::required_member(&prefix, &member_context),
+                )
+            } else {
+                let member_options = <<String as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::Options as ::std::default::Default>::default();
+                <String as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    value,
+                    prefix.clone(),
+                    &member_context,
+                    &member_options,
+                )?
+            }
+        };
+        let __webidl_member_type = {
+            let member_context = || {
+                deno_core::webidl::_derive::member_context(
+                    "type",
+                    "Dictionary",
+                    &context,
+                )
+            };
+            let value = deno_core::webidl::_derive::dictionary_member(
+                scope,
+                object,
+                "type",
+                &prefix,
+                &member_context,
+            )?;
+            if value.is_undefined() {
+                return ::std::result::Result::Err(
+                    deno_core::webidl::_derive::required_member(&prefix, &member_context),
+                )
+            } else {
+                let member_options = <<u8 as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::Options as ::std::default::Default>::default();
+                <u8 as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    value,
+                    prefix.clone(),
+                    &member_context,
+                    &member_options,
+                )?
+            }
+        };
+        let _ = object;
+        ::std::result::Result::Ok(Self {
+            clamped: __webidl_member_clamped,
+            clamped_default: __webidl_member_clamped_default,
+            renamed: __webidl_member_renamed,
+            enforced: __webidl_member_enforced,
+            foo_bar: __webidl_member_foo_bar,
+            maybe: __webidl_member_maybe,
+            mode: __webidl_member_mode,
+            nested: __webidl_member_nested,
+            renamed_required: __webidl_member_renamed_required,
+            required: __webidl_member_required,
+            r#type: __webidl_member_type,
+        })
+    }
+}

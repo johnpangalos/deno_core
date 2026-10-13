@@ -561,6 +561,20 @@ Function
 <td>
 
 ```text
+#[webidl] WebIdlType
+```
+
+</td><td>
+
+</td><td>
+any
+</td><td>
+Any type implementing `deno_core::webidl::WebIdlConverter`. A failed conversion throws a `TypeError` (async ops reject with it).
+</td></tr>
+<tr>
+<td>
+
+```text
 #[serde] SerdeType
 ```
 

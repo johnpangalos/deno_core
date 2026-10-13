@@ -40,8 +40,9 @@ pub(crate) fn generate_dispatch_slow_call(
   let mut deferred = TokenStream::new();
 
   for (index, arg) in signature.args.iter().enumerate() {
-    let arg_mapped = from_arg(generator_state, index, arg, &signature.ret_val)
-      .map_err(|s| V8SignatureMappingError::NoArgMapping(s, arg.clone()))?;
+    let arg_mapped =
+      from_arg(generator_state, index, input_index, arg, &signature.ret_val)
+        .map_err(|s| V8SignatureMappingError::NoArgMapping(s, arg.clone()))?;
     if arg.is_virtual() {
       deferred.extend(arg_mapped);
     } else {
@@ -355,6 +356,7 @@ pub fn extract_arg(
 pub fn from_arg(
   mut generator_state: &mut GeneratorState,
   index: usize,
+  input_index: usize,
   arg: &Arg,
   ret_val: &RetVal,
 ) -> Result<TokenStream, V8MappingError> {
@@ -411,6 +413,7 @@ pub fn from_arg(
       let some = from_arg(
         generator_state,
         index,
+        input_index,
         &Arg::Numeric(*numeric, *flag),
         ret_val,
       )?;
@@ -639,6 +642,36 @@ pub fn from_arg(
       let throw_exception = throw_type_error_string(generator_state, &err)?;
       quote! {
         let #arg_ident = match <#ty as deno_core::FromV8>::from_v8(&mut #scope, #arg_ident) {
+          Ok(t) => t,
+          Err(#err) => {
+            #throw_exception;
+          }
+        };
+      }
+    }
+    Arg::WebIDL(ty) => {
+      *needs_scope = true;
+      let ty =
+        syn::parse_str::<syn::Type>(ty).expect("Failed to reparse webidl type");
+      let scope = scope.clone();
+      let err = format_ident!("{}_err", arg_ident);
+      let prefix = format!("Failed to execute '{}'", generator_state.op_name);
+      // Async ops receive the promise ID as their first argument.
+      let argument_number = if ret_val.is_async() {
+        input_index
+      } else {
+        input_index + 1
+      };
+      let context = format!("Argument {argument_number}");
+      let throw_exception = throw_type_error_string(generator_state, &err)?;
+      quote! {
+        let #arg_ident = match <#ty as deno_core::webidl::WebIdlConverter<'_>>::convert(
+          &mut #scope,
+          #arg_ident,
+          ::std::borrow::Cow::Borrowed(#prefix),
+          || ::std::borrow::Cow::Borrowed(#context),
+          &::std::default::Default::default(),
+        ) {
           Ok(t) => t,
           Err(#err) => {
             #throw_exception;

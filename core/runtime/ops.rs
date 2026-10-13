@@ -664,6 +664,12 @@ mod tests {
       op_smi_to_from_v8,
       op_number_to_from_v8,
       op_bool_to_from_v8,
+      op_webidl_dictionary,
+      op_webidl_enum,
+      op_webidl_u8,
+      op_webidl_option,
+      op_webidl_full,
+      op_webidl_raw_ident,
     ],
     state = |state| {
       state.put(1234u32);
@@ -2500,6 +2506,205 @@ mod tests {
       err.to_string(),
       "TypeError: Expected boolean\n    at <anonymous>:4:7"
     );
+    Ok(())
+  }
+
+  #[derive(crate::WebIDL)]
+  #[webidl(dictionary)]
+  pub struct WebIdlDict {
+    pub foo_bar: u8,
+    #[webidl(default = String::from("none"))]
+    pub label: String,
+  }
+
+  #[derive(Debug, crate::WebIDL)]
+  #[webidl(enum)]
+  pub enum WebIdlMode {
+    FooBar,
+    A,
+  }
+
+  #[op2]
+  #[string]
+  fn op_webidl_dictionary(#[webidl] dict: WebIdlDict) -> String {
+    format!("{}:{}", dict.foo_bar, dict.label)
+  }
+
+  #[op2]
+  #[string]
+  fn op_webidl_enum(#[webidl] mode: WebIdlMode) -> String {
+    format!("{mode:?}")
+  }
+
+  #[op2]
+  fn op_webidl_u8(#[webidl] value: u8) -> u32 {
+    value as u32
+  }
+
+  #[op2]
+  #[string]
+  fn op_webidl_option(#[webidl] value: Option<String>) -> String {
+    value.unwrap_or_else(|| "null".to_string())
+  }
+
+  #[derive(crate::WebIDL)]
+  #[webidl(dictionary)]
+  pub struct WebIdlFull {
+    #[webidl(rename = "B")]
+    pub upper: u8,
+    pub a: u8,
+    pub maybe: Option<u8>,
+    #[webidl(required)]
+    pub req: u8,
+    #[options(enforce_range = true)]
+    pub strict: Option<u8>,
+  }
+
+  #[op2]
+  #[string]
+  fn op_webidl_full(#[webidl] full: WebIdlFull) -> String {
+    format!(
+      "{}:{}:{:?}:{}:{:?}",
+      full.upper, full.a, full.maybe, full.req, full.strict
+    )
+  }
+
+  #[derive(crate::WebIDL)]
+  #[webidl(dictionary)]
+  pub struct WebIdlRawIdent {
+    pub r#type: u8,
+  }
+
+  #[op2]
+  fn op_webidl_raw_ident(#[webidl] dict: WebIdlRawIdent) -> u32 {
+    dict.r#type as u32
+  }
+
+  const WEBIDL_JS_HELPERS: &str = r"
+    function thrownMessage(f) {
+      try { f(); } catch (e) {
+        assert(e instanceof TypeError);
+        return e.message;
+      }
+      assert(false);
+    }
+  ";
+
+  #[tokio::test]
+  pub async fn test_op_webidl_dictionary(
+  ) -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_dictionary",
+      &format!(
+        "{WEBIDL_JS_HELPERS}
+        assert(op_webidl_dictionary({{ fooBar: 3, label: 'x' }}) === '3:x');
+        assert(op_webidl_dictionary({{ fooBar: 300 }}) === '44:none');
+        assert(thrownMessage(() => op_webidl_dictionary(5)) === \"Failed to execute 'op_webidl_dictionary': Argument 1 is not an object.\");
+        assert(thrownMessage(() => op_webidl_dictionary({{ label: 'x' }})) === \"Failed to execute 'op_webidl_dictionary': 'fooBar' of 'WebIdlDict' (Argument 1) is required.\");
+        "
+      ),
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_enum() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_enum",
+      &format!(
+        "{WEBIDL_JS_HELPERS}
+        assert(op_webidl_enum('foo-bar') === 'FooBar');
+        assert(op_webidl_enum('a') === 'A');
+        assert(op_webidl_enum({{ toString() {{ return 'foo-bar' }} }}) === 'FooBar');
+        assert(thrownMessage(() => op_webidl_enum('Foo-Bar')) === \"Failed to execute 'op_webidl_enum': Argument 1 has the value 'Foo-Bar', which is not one of the values of enum 'WebIdlMode'.\");
+        assert(thrownMessage(() => op_webidl_enum(Symbol())) === \"Failed to execute 'op_webidl_enum': Argument 1 is a Symbol and cannot be converted to a string.\");
+        "
+      ),
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_raw_ident(
+  ) -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_raw_ident",
+      &format!(
+        "{WEBIDL_JS_HELPERS}
+        assert(op_webidl_raw_ident({{ type: 4 }}) === 4);
+        assert(thrownMessage(() => op_webidl_raw_ident({{ rType: 4 }})) === \"Failed to execute 'op_webidl_raw_ident': 'type' of 'WebIdlRawIdent' (Argument 1) is required.\");
+        "
+      ),
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_u8() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_u8",
+      &format!(
+        "{WEBIDL_JS_HELPERS}
+        assert(op_webidl_u8(255) === 255);
+        assert(op_webidl_u8(256) === 0);
+        assert(op_webidl_u8('12') === 12);
+        assert(thrownMessage(() => op_webidl_u8(Symbol())) === \"Failed to execute 'op_webidl_u8': Argument 1 is a Symbol and cannot be converted to a number.\");
+        assert(thrownMessage(() => op_webidl_u8(1n)) === \"Failed to execute 'op_webidl_u8': Argument 1 is a BigInt and cannot be converted to a number.\");
+        "
+      ),
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_full() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_full",
+      &format!(
+        "{WEBIDL_JS_HELPERS}
+        const log = [];
+        const full = {{
+          get strict() {{ log.push('strict'); return undefined }},
+          get req() {{ log.push('req'); return 3 }},
+          get maybe() {{ log.push('maybe'); return null }},
+          get a() {{ log.push('a'); return 2 }},
+          get B() {{ log.push('B'); return 1 }},
+        }};
+        assert(op_webidl_full(full) === '1:2:None:3:None');
+        assert(log.join() === 'B,a,maybe,req,strict');
+        assert(op_webidl_full(Object.assign(Object.create({{ a: 5 }}), {{ B: 1, req: 2, strict: 9 }})) === '1:5:None:2:Some(9)');
+        assert(thrownMessage(() => op_webidl_full(null)) === \"Failed to execute 'op_webidl_full': 'B' of 'WebIdlFull' (Argument 1) is required.\");
+        assert(thrownMessage(() => op_webidl_full(5)) === \"Failed to execute 'op_webidl_full': Argument 1 is not an object.\");
+        assert(thrownMessage(() => op_webidl_full({{ B: 1, a: 2, req: undefined }})) === \"Failed to execute 'op_webidl_full': 'req' of 'WebIdlFull' (Argument 1) is required.\");
+        assert(thrownMessage(() => op_webidl_full({{ B: 1, a: 2, req: 1, strict: 300 }})) === \"Failed to execute 'op_webidl_full': 'strict' of 'WebIdlFull' (Argument 1) is outside the range of the type.\");
+        assert(thrownMessage(() => op_webidl_full({{ get B() {{ throw new Error('g') }}, a: 1, req: 1 }})) === \"Failed to execute 'op_webidl_full': 'B' of 'WebIdlFull' (Argument 1) threw an exception: Error: g\");
+        assert(thrownMessage(() => op_webidl_full({{ B: Symbol(), a: 1, req: 1 }})) === \"Failed to execute 'op_webidl_full': 'B' of 'WebIdlFull' (Argument 1) is a Symbol and cannot be converted to a number.\");
+        "
+      ),
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_option() -> Result<(), Box<dyn std::error::Error>>
+  {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_option",
+      &format!(
+        "{WEBIDL_JS_HELPERS}
+        assert(op_webidl_option('hi') === 'hi');
+        assert(op_webidl_option(null) === 'null');
+        assert(op_webidl_option(undefined) === 'null');
+        assert(thrownMessage(() => op_webidl_option(Symbol())) === \"Failed to execute 'op_webidl_option': Argument 1 is a Symbol and cannot be converted to a string.\");
+        "
+      ),
+    )?;
     Ok(())
   }
 }
