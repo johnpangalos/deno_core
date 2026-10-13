@@ -664,6 +664,15 @@ mod tests {
       op_smi_to_from_v8,
       op_number_to_from_v8,
       op_bool_to_from_v8,
+      op_webidl_u8,
+      op_webidl_string,
+      op_webidl_option,
+      op_webidl_vec,
+      op_webidl_map,
+      op_webidl_dict,
+      op_webidl_enum,
+      op_webidl_async,
+      op_webidl_nested,
     ],
     state = |state| {
       state.put(1234u32);
@@ -2438,6 +2447,270 @@ mod tests {
       assert(isNaN(op_number_to_from_v8(Number.NaN)));
     ",
     )?;
+    Ok(())
+  }
+
+  use crate::WebIDL;
+
+  #[derive(WebIDL)]
+  #[webidl(dictionary)]
+  pub struct WebIdlDict {
+    #[webidl(required)]
+    pub foo_bar: String,
+    #[webidl(default = 5)]
+    pub count: u8,
+    #[webidl(default = 0)]
+    #[options(clamp = true)]
+    pub clamped: u8,
+  }
+
+  #[derive(Debug, WebIDL)]
+  #[webidl(enum)]
+  pub enum WebIdlChoice {
+    FooBar,
+    #[webidl(rename = "null")]
+    Nothing,
+  }
+
+  #[op2]
+  pub fn op_webidl_u8(#[webidl] value: u8) -> u32 {
+    value as u32
+  }
+
+  #[op2]
+  #[string]
+  pub fn op_webidl_string(#[webidl] value: String) -> String {
+    value
+  }
+
+  #[op2]
+  #[string]
+  pub fn op_webidl_option(#[webidl] value: Option<String>) -> String {
+    value.unwrap_or_else(|| "none".to_string())
+  }
+
+  #[op2]
+  pub fn op_webidl_vec(#[webidl] value: Vec<u8>) -> u32 {
+    value.iter().map(|v| *v as u32).sum()
+  }
+
+  #[op2]
+  #[string]
+  pub fn op_webidl_map(
+    #[webidl] value: std::collections::HashMap<String, String>,
+  ) -> String {
+    let mut entries: Vec<String> =
+      value.into_iter().map(|(k, v)| format!("{k}={v}")).collect();
+    entries.sort();
+    entries.join(",")
+  }
+
+  #[op2]
+  #[string]
+  pub fn op_webidl_dict(#[webidl] value: WebIdlDict) -> String {
+    format!("{}:{}:{}", value.foo_bar, value.count, value.clamped)
+  }
+
+  #[op2]
+  #[string]
+  pub fn op_webidl_enum(#[webidl] value: WebIdlChoice) -> String {
+    format!("{value:?}")
+  }
+
+  #[op2(async)]
+  pub async fn op_webidl_async(#[webidl] value: u8) -> u32 {
+    value as u32
+  }
+
+  #[derive(WebIDL)]
+  #[webidl(dictionary)]
+  pub struct WebIdlOuter {
+    pub inner: Option<WebIdlDict>,
+    #[webidl(default = Vec::new())]
+    pub list: Vec<WebIdlDict>,
+  }
+
+  #[op2]
+  #[string]
+  pub fn op_webidl_nested(#[webidl] value: WebIdlOuter) -> String {
+    let inner = value
+      .inner
+      .map(|d| format!("{}:{}", d.foo_bar, d.count))
+      .unwrap_or_default();
+    let list: Vec<String> = value.list.into_iter().map(|d| d.foo_bar).collect();
+    format!("{inner}|{}", list.join(","))
+  }
+
+  const EXPECT_TYPE_ERROR: &str = r"
+    function expectTypeError(fn, message) {
+      try {
+        fn();
+      } catch (e) {
+        if (!(e instanceof TypeError) || e.message !== message) {
+          throw new Error(`unexpected error: ${e}`);
+        }
+        return;
+      }
+      throw new Error(`expected a TypeError: ${message}`);
+    }";
+
+  #[tokio::test]
+  pub async fn test_op_webidl_u8() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_SLOW_ITERATIONS,
+      "op_webidl_u8",
+      &format!(
+        "{EXPECT_TYPE_ERROR}\n{}",
+        r"
+        assert(op_webidl_u8(256) === 0);
+        assert(op_webidl_u8(-1) === 255);
+        assert(op_webidl_u8(255.5) === 255);
+        assert(op_webidl_u8('12') === 12);
+        assert(op_webidl_u8() === 0);
+        assert(op_webidl_u8(null) === 0);
+        assert(op_webidl_u8({ valueOf() { return 7 } }) === 7);
+        expectTypeError(() => op_webidl_u8(Symbol()), `Failed to execute 'op_webidl_u8': Argument 1 is a Symbol and not a number`);
+        expectTypeError(() => op_webidl_u8(1n), `Failed to execute 'op_webidl_u8': Argument 1 is a BigInt and not a number`);
+        expectTypeError(() => op_webidl_u8({ valueOf() { throw new Error('boom') } }), `Failed to execute 'op_webidl_u8': Argument 1 could not be converted: Error: boom`);"
+      ),
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_string() -> Result<(), Box<dyn std::error::Error>>
+  {
+    run_test2(
+      JIT_SLOW_ITERATIONS,
+      "op_webidl_string",
+      &format!(
+        "{EXPECT_TYPE_ERROR}\n{}",
+        r"
+        assert(op_webidl_string({ toString() { return 'x' } }) === 'x');
+        assert(op_webidl_string(null) === 'null');
+        assert(op_webidl_string(1.5) === '1.5');
+        expectTypeError(() => op_webidl_string(Symbol()), `Failed to execute 'op_webidl_string': Argument 1 is a Symbol and cannot be converted to a string`);"
+      ),
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_option() -> Result<(), Box<dyn std::error::Error>>
+  {
+    run_test2(
+      JIT_SLOW_ITERATIONS,
+      "op_webidl_option",
+      r"
+      assert(op_webidl_option() === 'none');
+      assert(op_webidl_option(null) === 'none');
+      assert(op_webidl_option('a') === 'a');",
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_vec() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_SLOW_ITERATIONS,
+      "op_webidl_vec",
+      &format!(
+        "{EXPECT_TYPE_ERROR}\n{}",
+        r"
+        assert(op_webidl_vec([1, 2, 3]) === 6);
+        assert(op_webidl_vec(new Set([1, 2])) === 3);
+        expectTypeError(() => op_webidl_vec('abc'), `Failed to execute 'op_webidl_vec': Argument 1 is not an object`);
+        expectTypeError(() => op_webidl_vec({}), `Failed to execute 'op_webidl_vec': Argument 1 is not iterable`);"
+      ),
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_map() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_SLOW_ITERATIONS,
+      "op_webidl_map",
+      &format!(
+        "{EXPECT_TYPE_ERROR}\n{}",
+        r"
+        assert(op_webidl_map({ a: '1', b: '2' }) === 'a=1,b=2');
+        expectTypeError(() => op_webidl_map(), `Failed to execute 'op_webidl_map': Argument 1 is not an object`);
+        expectTypeError(() => op_webidl_map(1), `Failed to execute 'op_webidl_map': Argument 1 is not an object`);"
+      ),
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_dict() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_SLOW_ITERATIONS,
+      "op_webidl_dict",
+      &format!(
+        "{EXPECT_TYPE_ERROR}\n{}",
+        r"
+        assert(op_webidl_dict({ fooBar: 'x' }) === 'x:5:0');
+        assert(op_webidl_dict({ fooBar: 'x', clamped: 300, count: undefined }) === 'x:5:255');
+        const log = [];
+        op_webidl_dict({
+          get fooBar() { log.push('fooBar'); return 'x' },
+          get count() { log.push('count'); return 1 },
+          get clamped() { log.push('clamped'); return 1 },
+        });
+        assert(log.join() === 'clamped,count,fooBar');
+        expectTypeError(() => op_webidl_dict(null), `Failed to execute 'op_webidl_dict': Argument 1 (dictionary) is missing required key 'fooBar'`);
+        expectTypeError(() => op_webidl_dict(5), `Failed to execute 'op_webidl_dict': Argument 1 (dictionary) is not an object`);
+        expectTypeError(() => op_webidl_dict({ get fooBar() { throw new Error('boom') } }), `Failed to execute 'op_webidl_dict': Argument 1 (dictionary) could not be converted: Error: boom`);
+        assert(op_webidl_dict({ fooBar: 'y' }) === 'y:5:0');"
+      ),
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_nested() -> Result<(), Box<dyn std::error::Error>>
+  {
+    run_test2(
+      JIT_SLOW_ITERATIONS,
+      "op_webidl_nested",
+      r"
+      assert(op_webidl_nested({}) === '|');
+      assert(op_webidl_nested({ inner: null }) === '|');
+      assert(op_webidl_nested({ inner: { fooBar: 'a' }, list: [{ fooBar: 'b' }, { fooBar: 'c' }] }) === 'a:5|b,c');",
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_enum() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_SLOW_ITERATIONS,
+      "op_webidl_enum",
+      &format!(
+        "{EXPECT_TYPE_ERROR}\n{}",
+        r"
+        assert(op_webidl_enum('foo-bar') === 'FooBar');
+        assert(op_webidl_enum('null') === 'Nothing');
+        assert(op_webidl_enum(null) === 'Nothing');
+        expectTypeError(() => op_webidl_enum('FooBar'), `Failed to execute 'op_webidl_enum': Argument 1 'FooBar' is not a valid value for enumeration 'WebIdlChoice'`);
+        expectTypeError(() => op_webidl_enum(''), `Failed to execute 'op_webidl_enum': Argument 1 '' is not a valid value for enumeration 'WebIdlChoice'`);"
+      ),
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_async() -> Result<(), Box<dyn std::error::Error>>
+  {
+    run_async_test(
+      JIT_SLOW_ITERATIONS,
+      "op_webidl_async",
+      r"
+      assert(await op_webidl_async(300) === 44);
+      assert(await op_webidl_async() === 0);",
+    )
+    .await?;
     Ok(())
   }
 

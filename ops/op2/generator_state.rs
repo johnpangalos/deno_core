@@ -5,6 +5,8 @@ use proc_macro2::TokenStream;
 #[derive(Clone)]
 pub struct GeneratorState {
   pub name: Ident,
+  /// The op's name as written in the source, used in error messages.
+  pub op_name: String,
   /// Identifiers for each of the arguments of the original function
   pub args: Vec<Ident>,
   /// The result of the `call` function

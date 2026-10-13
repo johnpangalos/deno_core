@@ -561,6 +561,20 @@ Function
 <td>
 
 ```text
+#[webidl] Type
+```
+
+</td><td>
+
+</td><td>
+any
+</td><td>
+Converted with `WebIdlConverter`, e.g. String, u32, Option<String>, Vec<u8>, HashMap<String, String>, or a `#[derive(WebIDL)]` type. Throws a TypeError on failure.
+</td></tr>
+<tr>
+<td>
+
+```text
 #[serde] SerdeType
 ```
 
@@ -1652,3 +1666,36 @@ v8::Local<v8::...>
 </table>
 
 <!-- END RV -->
+
+## `#[webidl]` arguments
+
+`#[webidl]` converts an argument with `deno_core::webidl::WebIdlConverter`, the
+trait that implements WebIDL's
+[JavaScript to IDL type mapping](https://webidl.spec.whatwg.org/#js-type-mapping).
+Use it for types that `#[op2]` otherwise rejects because a better alternative
+exists, such as `String`, `u32`, `bool`, `f64`, `Option<String>`, `Vec<u8>` or
+`HashMap<String, String>`, and for dictionaries and enums that derive
+`deno_core::WebIDL`:
+
+```rust,ignore
+#[op2]
+fn op_greet(#[webidl] name: String, #[webidl] options: Option<Options>) {}
+```
+
+Conversion uses the converter's default options. For integers, that means
+`[EnforceRange]` and `[Clamp]` are off, so values wrap modulo 2^bits and NaN and
+the infinities become 0. A missing argument is `undefined`. Errors are thrown
+as a JavaScript `TypeError` whose message is built from a prefix and a context:
+
+- The prefix is `Failed to execute '<op name>'`.
+- The context is `Argument <n>`, where `<n>` is the 1-based JavaScript argument
+  index.
+
+For example, `op_greet(Symbol())` throws a `TypeError` with the message
+`Failed to execute 'op_greet': Argument 1 is a Symbol and cannot be converted
+to a string`. Values nested inside an argument add their own context, such as
+`'fooBar' of 'Argument 1'`.
+
+An op with a `#[webidl]` argument has no fast call path, the same as
+`#[from_v8]`, so `#[op2(fast)]` rejects it. `#[webidl]` is not valid on a return
+value.

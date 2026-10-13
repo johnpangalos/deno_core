@@ -1,0 +1,39 @@
+impl<'a> ::deno_core::webidl::WebIdlConverter<'a> for Choice {
+    type Options = ();
+    #[allow(unused_variables, clippy::field_reassign_with_default)]
+    fn convert<C>(
+        scope: &mut ::deno_core::v8::HandleScope<'a>,
+        value: ::deno_core::v8::Local<'a, ::deno_core::v8::Value>,
+        prefix: ::std::borrow::Cow<'static, str>,
+        context: C,
+        _options: &Self::Options,
+    ) -> ::std::result::Result<Self, ::deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        let __string = <::std::string::String as ::deno_core::webidl::WebIdlConverter<
+            'a,
+        >>::convert(
+            scope,
+            value,
+            prefix.clone(),
+            &context,
+            &::std::default::Default::default(),
+        )?;
+        match __string.as_str() {
+            "foo-bar" => ::std::result::Result::Ok(Self::FooBar),
+            "null" => ::std::result::Result::Ok(Self::Nothing),
+            "a" => ::std::result::Result::Ok(Self::A),
+            _ => {
+                Err(
+                    ::deno_core::webidl::invalid_enum_value(
+                        &prefix,
+                        &context(),
+                        &__string,
+                        "Choice",
+                    ),
+                )
+            }
+        }
+    }
+}

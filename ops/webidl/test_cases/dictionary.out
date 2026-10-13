@@ -1,0 +1,252 @@
+impl<'a> ::deno_core::webidl::WebIdlConverter<'a> for Dict {
+    type Options = ();
+    #[allow(unused_variables, clippy::field_reassign_with_default)]
+    fn convert<C>(
+        scope: &mut ::deno_core::v8::HandleScope<'a>,
+        value: ::deno_core::v8::Local<'a, ::deno_core::v8::Value>,
+        prefix: ::std::borrow::Cow<'static, str>,
+        context: C,
+        _options: &Self::Options,
+    ) -> ::std::result::Result<Self, ::deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        let dictionary_context = || {
+            ::std::borrow::Cow::Owned(format!("{} (dictionary)", context()))
+        };
+        let __object = ::deno_core::webidl::dictionary_object(
+            value,
+            &prefix,
+            &dictionary_context,
+        )?;
+        let __field_3 = match ::deno_core::webidl::dictionary_member(
+            scope,
+            __object,
+            "clamped",
+            &prefix,
+            &dictionary_context,
+        )? {
+            Some(__value) => {
+                #[allow(clippy::field_reassign_with_default)]
+                let mut __options = <u8 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::Options::default();
+                __options.clamp = true;
+                <u8 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    __value,
+                    prefix.clone(),
+                    || ::deno_core::webidl::nested_context(
+                        "clamped",
+                        &dictionary_context(),
+                    ),
+                    &__options,
+                )?
+            }
+            None => {
+                return Err(
+                    ::deno_core::webidl::missing_required_key(
+                        &prefix,
+                        &dictionary_context(),
+                        "clamped",
+                    ),
+                );
+            }
+        };
+        let __field_1 = match ::deno_core::webidl::dictionary_member(
+            scope,
+            __object,
+            "customKey",
+            &prefix,
+            &dictionary_context,
+        )? {
+            Some(__value) => {
+                let __options = <u8 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::Options::default();
+                <u8 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    __value,
+                    prefix.clone(),
+                    || ::deno_core::webidl::nested_context(
+                        "customKey",
+                        &dictionary_context(),
+                    ),
+                    &__options,
+                )?
+            }
+            None => 5,
+        };
+        let __field_2 = match ::deno_core::webidl::dictionary_member(
+            scope,
+            __object,
+            "fooBar",
+            &prefix,
+            &dictionary_context,
+        )? {
+            Some(__value) => {
+                let __options = <String as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::Options::default();
+                <String as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    __value,
+                    prefix.clone(),
+                    || ::deno_core::webidl::nested_context(
+                        "fooBar",
+                        &dictionary_context(),
+                    ),
+                    &__options,
+                )?
+            }
+            None => {
+                return Err(
+                    ::deno_core::webidl::missing_required_key(
+                        &prefix,
+                        &dictionary_context(),
+                        "fooBar",
+                    ),
+                );
+            }
+        };
+        let __field_5 = match ::deno_core::webidl::dictionary_member(
+            scope,
+            __object,
+            "maybe",
+            &prefix,
+            &dictionary_context,
+        )? {
+            Some(__value) => {
+                let __options = <Option<
+                    String,
+                > as ::deno_core::webidl::WebIdlConverter<'a>>::Options::default();
+                <Option<
+                    String,
+                > as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    __value,
+                    prefix.clone(),
+                    || ::deno_core::webidl::nested_context(
+                        "maybe",
+                        &dictionary_context(),
+                    ),
+                    &__options,
+                )?
+            }
+            None => None,
+        };
+        let __field_4 = match ::deno_core::webidl::dictionary_member(
+            scope,
+            __object,
+            "ranged",
+            &prefix,
+            &dictionary_context,
+        )? {
+            Some(__value) => {
+                #[allow(clippy::field_reassign_with_default)]
+                let mut __options = <u16 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::Options::default();
+                __options.enforce_range = true;
+                <u16 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    __value,
+                    prefix.clone(),
+                    || ::deno_core::webidl::nested_context(
+                        "ranged",
+                        &dictionary_context(),
+                    ),
+                    &__options,
+                )?
+            }
+            None => {
+                return Err(
+                    ::deno_core::webidl::missing_required_key(
+                        &prefix,
+                        &dictionary_context(),
+                        "ranged",
+                    ),
+                );
+            }
+        };
+        let __field_6 = match ::deno_core::webidl::dictionary_member(
+            scope,
+            __object,
+            "type",
+            &prefix,
+            &dictionary_context,
+        )? {
+            Some(__value) => {
+                let __options = <String as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::Options::default();
+                <String as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    __value,
+                    prefix.clone(),
+                    || ::deno_core::webidl::nested_context(
+                        "type",
+                        &dictionary_context(),
+                    ),
+                    &__options,
+                )?
+            }
+            None => String::new(),
+        };
+        let __field_0 = match ::deno_core::webidl::dictionary_member(
+            scope,
+            __object,
+            "zeta",
+            &prefix,
+            &dictionary_context,
+        )? {
+            Some(__value) => {
+                let __options = <u8 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::Options::default();
+                <u8 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    __value,
+                    prefix.clone(),
+                    || ::deno_core::webidl::nested_context(
+                        "zeta",
+                        &dictionary_context(),
+                    ),
+                    &__options,
+                )?
+            }
+            None => {
+                return Err(
+                    ::deno_core::webidl::missing_required_key(
+                        &prefix,
+                        &dictionary_context(),
+                        "zeta",
+                    ),
+                );
+            }
+        };
+        Ok(Self {
+            zeta: __field_0,
+            alpha: __field_1,
+            foo_bar: __field_2,
+            clamped: __field_3,
+            ranged: __field_4,
+            maybe: __field_5,
+            r#type: __field_6,
+        })
+    }
+}
