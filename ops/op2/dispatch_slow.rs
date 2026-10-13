@@ -276,6 +276,42 @@ pub(crate) fn with_required_check(
   )
 }
 
+/// Replace all lifetimes in a stringified type with `'_`.
+fn elide_lifetimes(ty: &str) -> String {
+  let mut out = String::with_capacity(ty.len());
+  let mut chars = ty.chars().peekable();
+  while let Some(c) = chars.next() {
+    out.push(c);
+    if c == '\'' {
+      while chars
+        .next_if(|c| c.is_alphanumeric() || *c == '_')
+        .is_some()
+      {}
+      out.push('_');
+    }
+  }
+  out
+}
+
+/// The prefix of WebIDL conversion error messages for this op.
+fn webidl_prefix(generator_state: &GeneratorState) -> String {
+  let name = generator_state.op_name.to_string();
+  let name = name
+    .strip_prefix("__set_")
+    .or_else(|| name.strip_prefix("__static_"))
+    .unwrap_or(&name);
+  if generator_state.use_this_cppgc {
+    format!("Failed to construct '{}'", generator_state.self_ty)
+  } else if generator_state.needs_self {
+    format!(
+      "Failed to execute '{}' on '{}'",
+      name, generator_state.self_ty
+    )
+  } else {
+    format!("Failed to execute '{name}'")
+  }
+}
+
 pub(crate) fn with_opctx(generator_state: &mut GeneratorState) -> TokenStream {
   generator_state.needs_args = true;
   gs_quote!(generator_state(opctx, fn_args) =>
@@ -639,6 +675,31 @@ pub fn from_arg(
       let throw_exception = throw_type_error_string(generator_state, &err)?;
       quote! {
         let #arg_ident = match <#ty as deno_core::FromV8>::from_v8(&mut #scope, #arg_ident) {
+          Ok(t) => t,
+          Err(#err) => {
+            #throw_exception;
+          }
+        };
+      }
+    }
+    Arg::WebIDL(ty) => {
+      *needs_scope = true;
+      // The op's lifetimes are not in scope here, so let them be inferred
+      let ty = syn::parse_str::<syn::Type>(&elide_lifetimes(ty))
+        .expect("Failed to reparse state type");
+      let scope = scope.clone();
+      let err = format_ident!("{}_err", arg_ident);
+      let throw_exception = throw_type_error_string(generator_state, &err)?;
+      let prefix = webidl_prefix(generator_state);
+      let context = format!("Argument {}", index + 1);
+      quote! {
+        let #arg_ident = match <#ty as deno_core::webidl::WebIdlConverter>::convert(
+          &mut #scope,
+          #arg_ident,
+          std::borrow::Cow::Borrowed(#prefix),
+          || std::borrow::Cow::Borrowed(#context),
+          &Default::default(),
+        ) {
           Ok(t) => t,
           Err(#err) => {
             #throw_exception;

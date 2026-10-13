@@ -91,6 +91,67 @@ over if the parameters are compatible. This is useful for a function that takes
 any buffer type in the slow path and wishes to use the very fast typed `u8`
 buffer for the fast path.
 
+## WebIDL
+
+Arguments marked with `#[webidl]` are converted using the type's
+`deno_core::webidl::WebIdlConverter` implementation, following the
+[WebIDL specification](https://webidl.spec.whatwg.org/#js-type-mapping). This
+makes it possible for ops to accept arguments in the same way that web APIs
+specify them. If an argument fails to convert, a `TypeError` is thrown, ie:
+`Failed to execute 'op_example': Argument 1 is not a finite number`.
+
+`WebIdlConverter` is implemented for:
+
+| WebIDL type                       | Rust type                           | Options         |
+| --------------------------------- | ----------------------------------- | --------------- |
+| `any`                             | `v8::Local<v8::Value>`              |                 |
+| `boolean`                         | `bool`                              |                 |
+| `byte`, `octet`                   | `i8`, `u8`                          | `IntOptions`    |
+| `short`, `unsigned short`         | `i16`, `u16`                        | `IntOptions`    |
+| `long`, `unsigned long`           | `i32`, `u32`                        | `IntOptions`    |
+| `long long`, `unsigned long long` | `i64`, `u64`                        | `IntOptions`    |
+| `float`, `unrestricted float`     | `f32`, `webidl::UnrestrictedFloat`  |                 |
+| `double`, `unrestricted double`   | `f64`, `webidl::UnrestrictedDouble` |                 |
+| `bigint`                          | `webidl::BigInt`                    |                 |
+| `DOMString`                       | `String`                            | `StringOptions` |
+| `ByteString`                      | `webidl::ByteString`                | `StringOptions` |
+| `T?`                              | `Option<T>`                         | `T::Options`    |
+| `sequence<T>`                     | `Vec<T>`                            | `T::Options`    |
+| `record<DOMString, T>`            | `HashMap<String, T>`                | `T::Options`    |
+
+`#[webidl]` arguments are always converted with the default options. Dictionaries
+and enums can be implemented with `#[derive(WebIDL)]`:
+
+```rust,ignore
+use deno_core::WebIDL;
+
+#[derive(WebIDL)]
+#[webidl(dictionary)]
+pub struct Options {
+  // Read from the `bufferSize` member
+  #[options(enforce_range = true)]
+  buffer_size: Option<u32>,
+  #[webidl(default = Mode::Fast)]
+  mode: Mode,
+  #[webidl(required, rename = "id")]
+  identifier: String,
+}
+
+#[derive(WebIDL)]
+#[webidl(enum)]
+pub enum Mode {
+  // "fast"
+  Fast,
+  // "extra-slow"
+  ExtraSlow,
+}
+
+#[op2]
+fn op_example(#[webidl] options: Options) {
+  // ...
+}
+```
+
 # Parameters
 
 <!-- START ARGS -->
@@ -584,6 +645,20 @@ any
 any
 </td><td>
 ⚠️ May be slow.
+</td></tr>
+<tr>
+<td>
+
+```text
+#[webidl] WebIdlType
+```
+
+</td><td>
+
+</td><td>
+any
+</td><td>
+Converted according to the WebIDL specification. A conversion failure throws a `TypeError`. See [WebIDL](#webidl).
 </td></tr>
 <tr>
 <td>

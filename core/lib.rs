@@ -32,6 +32,7 @@ mod runtime;
 mod source_map;
 mod tasks;
 mod web_timeout;
+pub mod webidl;
 
 // Re-exports
 pub use anyhow;
@@ -52,6 +53,7 @@ pub use url;
 pub use v8;
 
 pub use deno_ops::op2;
+pub use deno_ops::WebIDL;
 
 pub use crate::async_cancel::CancelFuture;
 pub use crate::async_cancel::CancelHandle;
@@ -255,6 +257,7 @@ mod tests {
       {
         eprintln!("Ignoring test because we couldn't find deno: {e:?}");
       }
+      return;
     }
     let status = Command::new("deno")
       .args(["run", "-A", "rebuild_async_stubs.js", "--check"])

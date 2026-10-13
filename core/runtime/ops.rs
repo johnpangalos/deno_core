@@ -551,6 +551,7 @@ mod tests {
   use crate::OpState;
   use crate::RuntimeOptions;
   use crate::ToV8;
+  use crate::WebIDL;
   use anyhow::bail;
   use anyhow::Error;
   use bytes::BytesMut;
@@ -664,6 +665,10 @@ mod tests {
       op_smi_to_from_v8,
       op_number_to_from_v8,
       op_bool_to_from_v8,
+
+      op_test_webidl,
+      op_test_webidl_method_args,
+      op_async_webidl,
     ],
     state = |state| {
       state.put(1234u32);
@@ -2500,6 +2505,143 @@ mod tests {
       err.to_string(),
       "TypeError: Expected boolean\n    at <anonymous>:4:7"
     );
+    Ok(())
+  }
+
+  #[derive(WebIDL)]
+  #[webidl(dictionary)]
+  struct TestDict {
+    #[webidl(required)]
+    name: String,
+    #[options(enforce_range = true)]
+    count: Option<u8>,
+    #[webidl(default = TestEnum::Foo)]
+    kind: TestEnum,
+  }
+
+  #[derive(Debug, WebIDL)]
+  #[webidl(enum)]
+  enum TestEnum {
+    Foo,
+    BarBaz,
+  }
+
+  #[op2]
+  #[string]
+  fn op_test_webidl(#[webidl] dict: TestDict, #[webidl] n: f64) -> String {
+    format!("{}:{:?}:{:?}:{n}", dict.name, dict.count, dict.kind)
+  }
+
+  #[op2]
+  #[serde]
+  fn op_test_webidl_method_args(
+    #[webidl] strings: Vec<String>,
+    #[webidl] map: Option<std::collections::HashMap<String, i32>>,
+  ) -> (Vec<String>, usize) {
+    (strings, map.map(|m| m.len()).unwrap_or_default())
+  }
+
+  #[op2(async)]
+  async fn op_async_webidl(#[webidl] n: u32) -> u32 {
+    n
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_test_webidl",
+      r#"
+        assert(op_test_webidl({ name: "a" }, 1.5) == "a:None:Foo:1.5");
+        assert(op_test_webidl({ name: 1, count: 2, kind: "bar-baz" }, "2") == "1:Some(2):BarBaz:2");
+      "#,
+    )?;
+    for (test, message) in [
+      (
+        "op_test_webidl({}, 1)",
+        "TypeError: Failed to execute 'op_test_webidl': Argument 1 can not be converted to 'TestDict' because 'name' is required in 'TestDict'",
+      ),
+      (
+        "op_test_webidl(1, 1)",
+        "TypeError: Failed to execute 'op_test_webidl': Argument 1 can not be converted to dictionary",
+      ),
+      (
+        "op_test_webidl({ name: 'a', count: 256 }, 1)",
+        "TypeError: Failed to execute 'op_test_webidl': 'count' of 'TestDict' (Argument 1) is outside the accepted range of 0 to 255, inclusive",
+      ),
+      (
+        "op_test_webidl({ name: 'a', kind: 'bar' }, 1)",
+        "TypeError: Failed to execute 'op_test_webidl': 'kind' of 'TestDict' (Argument 1) with value 'bar' is not a valid enum value of type 'TestEnum'",
+      ),
+      (
+        "op_test_webidl({ name: 'a' }, NaN)",
+        "TypeError: Failed to execute 'op_test_webidl': Argument 2 is not a finite number",
+      ),
+      (
+        "op_test_webidl({ name: 'a' })",
+        "TypeError: Failed to execute 'op_test_webidl': Argument 2 is not a finite number",
+      ),
+    ] {
+      run_test2(
+        10,
+        "op_test_webidl",
+        &format!(
+          r#"
+          try {{
+            {test};
+            assert(false);
+          }} catch (e) {{
+            assert(e instanceof TypeError);
+            assert(String(e) == "{message}");
+          }}
+          "#
+        ),
+      )?;
+    }
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_method_args(
+  ) -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      10,
+      "op_test_webidl_method_args",
+      r#"
+        let [strings, len] = op_test_webidl_method_args(new Set(["a", 1]), { a: 1, b: 2 });
+        assert(strings.join() == "a,1");
+        assert(len == 2);
+        [strings, len] = op_test_webidl_method_args([], null);
+        assert(strings.length == 0 && len == 0);
+        try {
+          op_test_webidl_method_args(["a"], { a: 1n });
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assertErrorContains(e, "Failed to execute 'op_test_webidl_method_args': Argument 2's value for key 'a' could not be converted");
+        }
+      "#,
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_async_webidl() -> Result<(), Box<dyn std::error::Error>>
+  {
+    run_async_test(
+      10,
+      "op_async_webidl",
+      r#"
+        assert(await op_async_webidl(-1) == 4294967295);
+        try {
+          await op_async_webidl(Symbol());
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+        }
+      "#,
+    )
+    .await?;
     Ok(())
   }
 }
