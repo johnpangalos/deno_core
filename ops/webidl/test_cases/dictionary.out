@@ -1,0 +1,311 @@
+impl<'a> ::deno_core::webidl::WebIdlConverter<'a> for WebIdlDictionary<'a> {
+    type Options = ();
+    #[allow(unused_variables)]
+    fn convert<C>(
+        __scope: &mut ::deno_core::v8::HandleScope<'a>,
+        __input: ::deno_core::v8::Local<'a, ::deno_core::v8::Value>,
+        __prefix: ::std::borrow::Cow<'static, str>,
+        __context: C,
+        _options: &Self::Options,
+    ) -> ::std::result::Result<Self, ::deno_core::webidl::WebIdlError>
+    where
+        C: ::std::ops::Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        if !(__input.is_null_or_undefined() || __input.is_object()) {
+            return ::std::result::Result::Err(
+                ::deno_core::webidl::WebIdlError::new(
+                    __prefix,
+                    __context(),
+                    "is not an object",
+                ),
+            );
+        }
+        let __member_0: u8 = {
+            let __ctx = || ::std::borrow::Cow::Owned(
+                ::std::format!(
+                    "{}, member '{}' of '{}'",
+                    __context(),
+                    "firstValue",
+                    "WebIdlDictionary",
+                ),
+            );
+            let __value = ::deno_core::webidl::get_dictionary_member(
+                __scope,
+                __input,
+                "firstValue",
+                &__prefix,
+                &__ctx,
+            )?;
+            if __value.is_undefined() {
+                5
+            } else {
+                <u8 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    __scope,
+                    __value,
+                    __prefix.clone(),
+                    &__ctx,
+                    &::std::default::Default::default(),
+                )?
+            }
+        };
+        let __member_3: bool = {
+            let __ctx = || ::std::borrow::Cow::Owned(
+                ::std::format!(
+                    "{}, member '{}' of '{}'",
+                    __context(),
+                    "required",
+                    "WebIdlDictionary",
+                ),
+            );
+            let __value = ::deno_core::webidl::get_dictionary_member(
+                __scope,
+                __input,
+                "required",
+                &__prefix,
+                &__ctx,
+            )?;
+            if __value.is_undefined() {
+                return ::std::result::Result::Err(
+                    ::deno_core::webidl::WebIdlError::new(
+                        __prefix.clone(),
+                        __ctx(),
+                        "is required",
+                    ),
+                )
+            } else {
+                <bool as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    __scope,
+                    __value,
+                    __prefix.clone(),
+                    &__ctx,
+                    &::std::default::Default::default(),
+                )?
+            }
+        };
+        let __member_1: u16 = {
+            let __ctx = || ::std::borrow::Cow::Owned(
+                ::std::format!(
+                    "{}, member '{}' of '{}'",
+                    __context(),
+                    "secondValue",
+                    "WebIdlDictionary",
+                ),
+            );
+            let __value = ::deno_core::webidl::get_dictionary_member(
+                __scope,
+                __input,
+                "secondValue",
+                &__prefix,
+                &__ctx,
+            )?;
+            if __value.is_undefined() {
+                return ::std::result::Result::Err(
+                    ::deno_core::webidl::WebIdlError::new(
+                        __prefix.clone(),
+                        __ctx(),
+                        "is required",
+                    ),
+                )
+            } else {
+                <u16 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    __scope,
+                    __value,
+                    __prefix.clone(),
+                    &__ctx,
+                    &{
+                        let mut __options: <u16 as ::deno_core::webidl::WebIdlConverter<
+                            'a,
+                        >>::Options = ::std::default::Default::default();
+                        __options.enforce_range = true;
+                        __options
+                    },
+                )?
+            }
+        };
+        let __member_4: v8::Local<'a, v8::Value> = {
+            let __ctx = || ::std::borrow::Cow::Owned(
+                ::std::format!(
+                    "{}, member '{}' of '{}'",
+                    __context(),
+                    "value",
+                    "WebIdlDictionary",
+                ),
+            );
+            let __value = ::deno_core::webidl::get_dictionary_member(
+                __scope,
+                __input,
+                "value",
+                &__prefix,
+                &__ctx,
+            )?;
+            if __value.is_undefined() {
+                return ::std::result::Result::Err(
+                    ::deno_core::webidl::WebIdlError::new(
+                        __prefix.clone(),
+                        __ctx(),
+                        "is required",
+                    ),
+                )
+            } else {
+                <v8::Local<
+                    'a,
+                    v8::Value,
+                > as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    __scope,
+                    __value,
+                    __prefix.clone(),
+                    &__ctx,
+                    &::std::default::Default::default(),
+                )?
+            }
+        };
+        let __member_2: Option<String> = {
+            let __ctx = || ::std::borrow::Cow::Owned(
+                ::std::format!(
+                    "{}, member '{}' of '{}'",
+                    __context(),
+                    "zed",
+                    "WebIdlDictionary",
+                ),
+            );
+            let __value = ::deno_core::webidl::get_dictionary_member(
+                __scope,
+                __input,
+                "zed",
+                &__prefix,
+                &__ctx,
+            )?;
+            if __value.is_undefined() {
+                ::std::option::Option::None
+            } else {
+                <Option<
+                    String,
+                > as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    __scope,
+                    __value,
+                    __prefix.clone(),
+                    &__ctx,
+                    &::std::default::Default::default(),
+                )?
+            }
+        };
+        ::std::result::Result::Ok(Self {
+            first_value: __member_0,
+            required: __member_3,
+            second_value: __member_1,
+            value: __member_4,
+            renamed: __member_2,
+        })
+    }
+}
+
+impl<'a> ::deno_core::webidl::WebIdlConverter<'a> for Utf16Keys {
+    type Options = ();
+    #[allow(unused_variables)]
+    fn convert<C>(
+        __scope: &mut ::deno_core::v8::HandleScope<'a>,
+        __input: ::deno_core::v8::Local<'a, ::deno_core::v8::Value>,
+        __prefix: ::std::borrow::Cow<'static, str>,
+        __context: C,
+        _options: &Self::Options,
+    ) -> ::std::result::Result<Self, ::deno_core::webidl::WebIdlError>
+    where
+        C: ::std::ops::Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        if !(__input.is_null_or_undefined() || __input.is_object()) {
+            return ::std::result::Result::Err(
+                ::deno_core::webidl::WebIdlError::new(
+                    __prefix,
+                    __context(),
+                    "is not an object",
+                ),
+            );
+        }
+        let __member_1: u8 = {
+            let __ctx = || ::std::borrow::Cow::Owned(
+                ::std::format!(
+                    "{}, member '{}' of '{}'",
+                    __context(),
+                    "😀",
+                    "Utf16Keys",
+                ),
+            );
+            let __value = ::deno_core::webidl::get_dictionary_member(
+                __scope,
+                __input,
+                "😀",
+                &__prefix,
+                &__ctx,
+            )?;
+            if __value.is_undefined() {
+                return ::std::result::Result::Err(
+                    ::deno_core::webidl::WebIdlError::new(
+                        __prefix.clone(),
+                        __ctx(),
+                        "is required",
+                    ),
+                )
+            } else {
+                <u8 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    __scope,
+                    __value,
+                    __prefix.clone(),
+                    &__ctx,
+                    &::std::default::Default::default(),
+                )?
+            }
+        };
+        let __member_0: u8 = {
+            let __ctx = || ::std::borrow::Cow::Owned(
+                ::std::format!(
+                    "{}, member '{}' of '{}'",
+                    __context(),
+                    "｡",
+                    "Utf16Keys",
+                ),
+            );
+            let __value = ::deno_core::webidl::get_dictionary_member(
+                __scope,
+                __input,
+                "｡",
+                &__prefix,
+                &__ctx,
+            )?;
+            if __value.is_undefined() {
+                return ::std::result::Result::Err(
+                    ::deno_core::webidl::WebIdlError::new(
+                        __prefix.clone(),
+                        __ctx(),
+                        "is required",
+                    ),
+                )
+            } else {
+                <u8 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    __scope,
+                    __value,
+                    __prefix.clone(),
+                    &__ctx,
+                    &::std::default::Default::default(),
+                )?
+            }
+        };
+        ::std::result::Result::Ok(Self {
+            emoji: __member_1,
+            halfwidth: __member_0,
+        })
+    }
+}

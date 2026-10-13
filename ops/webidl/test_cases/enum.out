@@ -1,0 +1,40 @@
+impl<'a> ::deno_core::webidl::WebIdlConverter<'a> for WebIdlChoice {
+    type Options = ();
+    fn convert<C>(
+        __scope: &mut ::deno_core::v8::HandleScope<'a>,
+        __input: ::deno_core::v8::Local<'a, ::deno_core::v8::Value>,
+        __prefix: ::std::borrow::Cow<'static, str>,
+        __context: C,
+        _options: &Self::Options,
+    ) -> ::std::result::Result<Self, ::deno_core::webidl::WebIdlError>
+    where
+        C: ::std::ops::Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        let __value = <::std::string::String as ::deno_core::webidl::WebIdlConverter<
+            'a,
+        >>::convert(
+            __scope,
+            __input,
+            __prefix.clone(),
+            &__context,
+            &::std::default::Default::default(),
+        )?;
+        match __value.as_str() {
+            "foo-bar" => ::std::result::Result::Ok(Self::FooBar),
+            "baz" => ::std::result::Result::Ok(Self::Other),
+            __other => {
+                ::std::result::Result::Err(
+                    ::deno_core::webidl::WebIdlError::new(
+                        __prefix,
+                        __context(),
+                        ::std::format!(
+                            "value '{}' is not a valid member of enum '{}'",
+                            __other,
+                            "WebIdlChoice",
+                        ),
+                    ),
+                )
+            }
+        }
+    }
+}

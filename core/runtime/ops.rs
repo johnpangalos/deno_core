@@ -551,6 +551,7 @@ mod tests {
   use crate::OpState;
   use crate::RuntimeOptions;
   use crate::ToV8;
+  use crate::WebIDL;
   use anyhow::bail;
   use anyhow::Error;
   use bytes::BytesMut;
@@ -664,6 +665,13 @@ mod tests {
       op_smi_to_from_v8,
       op_number_to_from_v8,
       op_bool_to_from_v8,
+
+      op_webidl_u8,
+      op_webidl_second,
+      op_webidl_dict,
+      op_webidl_enum,
+      op_webidl_vec,
+      op_webidl_async,
     ],
     state = |state| {
       state.put(1234u32);
@@ -2500,6 +2508,220 @@ mod tests {
       err.to_string(),
       "TypeError: Expected boolean\n    at <anonymous>:4:7"
     );
+    Ok(())
+  }
+
+  #[op2]
+  pub fn op_webidl_u8(#[webidl] value: u8) -> u32 {
+    value as u32
+  }
+
+  #[op2]
+  pub fn op_webidl_second(a: u32, #[webidl] value: u8) -> u32 {
+    a + value as u32
+  }
+
+  #[derive(WebIDL)]
+  #[webidl(dictionary)]
+  pub struct WebIdlDictionary {
+    #[webidl(default = 5)]
+    foo_bar: u8,
+    #[options(clamp = true)]
+    clamped: u8,
+    #[webidl(rename = "zed")]
+    renamed: Option<u8>,
+    #[webidl(required)]
+    req: u8,
+  }
+
+  #[op2]
+  #[string]
+  pub fn op_webidl_dict(#[webidl] dict: WebIdlDictionary) -> String {
+    format!(
+      "{} {} {} {:?}",
+      dict.clamped, dict.foo_bar, dict.req, dict.renamed
+    )
+  }
+
+  #[derive(Debug, WebIDL)]
+  #[webidl(enum)]
+  pub enum WebIdlChoice {
+    FooBar,
+    #[webidl(rename = "baz")]
+    Other,
+  }
+
+  #[op2]
+  #[string]
+  pub fn op_webidl_enum(#[webidl] choice: WebIdlChoice) -> String {
+    format!("{choice:?}")
+  }
+
+  #[op2]
+  pub fn op_webidl_vec(#[webidl] values: Vec<u8>) -> u32 {
+    values.iter().map(|v| *v as u32).sum()
+  }
+
+  #[op2(async)]
+  pub async fn op_webidl_async(#[webidl] value: u8) -> u32 {
+    value as u32
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_u8() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_u8",
+      r"
+        assert(op_webidl_u8(255) == 255);
+        assert(op_webidl_u8(257) == 1);
+        assert(op_webidl_u8('12') == 12);
+        assert(op_webidl_u8(null) == 0);",
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_u8_error(
+  ) -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      2,
+      "op_webidl_u8",
+      r"
+        try {
+          op_webidl_u8(1n);
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assert(e.message === 'Failed to execute \'op_webidl_u8\': Argument 1 threw an exception: TypeError: Cannot convert a BigInt value to a number');
+        }",
+    )?;
+    run_test2(
+      2,
+      "op_webidl_second",
+      r"
+        try {
+          op_webidl_second(1, Symbol());
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assert(e.message === 'Failed to execute \'op_webidl_second\': Argument 2 threw an exception: TypeError: Cannot convert a Symbol value to a number');
+        }
+        assert(op_webidl_second(1, 2) == 3);",
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_dict() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_dict",
+      r"
+        const log = [];
+        const values = { clamped: 300, req: 1, zed: 7 };
+        const dict = {};
+        for (const k of ['zed', 'req', 'fooBar', 'clamped']) {
+          Object.defineProperty(dict, k, {
+            enumerable: true,
+            get() { log.push(k); return values[k]; },
+          });
+        }
+        assert(op_webidl_dict(dict) === '255 5 1 Some(7)');
+        assert(log.join(',') === 'clamped,fooBar,req,zed');",
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_dict_error(
+  ) -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      2,
+      "op_webidl_dict",
+      r"
+        const cases = [
+          [5, 'Failed to execute \'op_webidl_dict\': Argument 1 is not an object'],
+          [null, 'Failed to execute \'op_webidl_dict\': Argument 1, member \'clamped\' of \'WebIdlDictionary\' is required'],
+          [{},'Failed to execute \'op_webidl_dict\': Argument 1, member \'clamped\' of \'WebIdlDictionary\' is required'],
+          [{ clamped: 1 }, 'Failed to execute \'op_webidl_dict\': Argument 1, member \'req\' of \'WebIdlDictionary\' is required'],
+          [{ clamped: 1, req: Symbol() }, 'Failed to execute \'op_webidl_dict\': Argument 1, member \'req\' of \'WebIdlDictionary\' threw an exception: TypeError: Cannot convert a Symbol value to a number'],
+        ];
+        for (const [arg, message] of cases) {
+          try {
+            op_webidl_dict(arg);
+            assert(false);
+          } catch (e) {
+            assert(e instanceof TypeError);
+            assert(e.message === message);
+          }
+        }",
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_enum() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_enum",
+      r"
+        assert(op_webidl_enum('foo-bar') === 'FooBar');
+        assert(op_webidl_enum('baz') === 'Other');
+        try {
+          op_webidl_enum('FooBar');
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assert(e.message === 'Failed to execute \'op_webidl_enum\': Argument 1 value \'FooBar\' is not a valid member of enum \'WebIdlChoice\'');
+        }
+        try {
+          op_webidl_enum(Symbol());
+          assert(false);
+        } catch (e) {
+          assert(e.message === 'Failed to execute \'op_webidl_enum\': Argument 1 is a Symbol and cannot be converted to a string');
+        }",
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_vec() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_vec",
+      r"
+        assert(op_webidl_vec([1, 2, 3]) === 6);
+        assert(op_webidl_vec(new Set([4])) === 4);
+        try {
+          op_webidl_vec('abc');
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assert(e.message === 'Failed to execute \'op_webidl_vec\': Argument 1 is not an object');
+        }",
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_async() -> Result<(), Box<dyn std::error::Error>>
+  {
+    // Async ops report argument errors as a rejected promise.
+    run_async_test(
+      2,
+      "op_webidl_async",
+      r"
+        try {
+          await op_webidl_async(Symbol());
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assert(e.message === 'Failed to execute \'op_webidl_async\': Argument 1 threw an exception: TypeError: Cannot convert a Symbol value to a number');
+        }
+        assert((await op_webidl_async(3)) === 3);",
+    )
+    .await?;
     Ok(())
   }
 }

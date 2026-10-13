@@ -589,6 +589,20 @@ any
 <td>
 
 ```text
+#[webidl] T
+```
+
+</td><td>
+
+</td><td>
+any
+</td><td>
+Converted with `WebIdlConverter` and default options. Not available as a fastcall.
+</td></tr>
+<tr>
+<td>
+
+```text
 #[arraybuffer] &mut [u8]
 ```
 
