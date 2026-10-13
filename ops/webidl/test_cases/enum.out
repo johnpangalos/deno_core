@@ -1,0 +1,34 @@
+impl<'a> deno_core::webidl::WebIdlConverter<'a> for Mode {
+    type Options = ();
+    fn convert<C>(
+        scope: &mut deno_core::v8::HandleScope<'a>,
+        value: deno_core::v8::Local<'a, deno_core::v8::Value>,
+        prefix: ::std::borrow::Cow<'static, str>,
+        context: C,
+        _options: &Self::Options,
+    ) -> ::std::result::Result<Self, deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        let string = <::std::string::String as deno_core::webidl::WebIdlConverter<
+            'a,
+        >>::convert(scope, value, prefix.clone(), &context, &Default::default())?;
+        match string.as_str() {
+            "read-only" => Ok(Self::ReadOnly),
+            "rw" => Ok(Self::ReadWrite),
+            _ => {
+                Err(
+                    deno_core::webidl::WebIdlError::new(
+                        prefix,
+                        context(),
+                        format!(
+                            "is not a valid value of enum '{}': '{}'.",
+                            "Mode",
+                            string,
+                        ),
+                    ),
+                )
+            }
+        }
+    }
+}

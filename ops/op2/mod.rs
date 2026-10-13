@@ -172,6 +172,7 @@ pub(crate) fn generate_op2(
 
   let base_generator_state = GeneratorState {
     name,
+    op_name: orig_name.to_string(),
     args: args.clone(),
     fn_args,
     scope,

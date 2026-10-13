@@ -1,0 +1,218 @@
+impl<'a> deno_core::webidl::WebIdlConverter<'a> for Shadowing {
+    type Options = ();
+    fn convert<C>(
+        scope: &mut deno_core::v8::HandleScope<'a>,
+        value: deno_core::v8::Local<'a, deno_core::v8::Value>,
+        prefix: ::std::borrow::Cow<'static, str>,
+        context: C,
+        _options: &Self::Options,
+    ) -> ::std::result::Result<Self, deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        let dictionary = deno_core::_ops::dictionary_object(
+            value,
+            &prefix,
+            &context,
+            "Shadowing",
+        )?;
+        let __webidl_member_0: u8 = {
+            let raw = deno_core::_ops::dictionary_member(
+                scope,
+                dictionary,
+                "context",
+                &prefix,
+                &context,
+            )?;
+            match raw {
+                Some(value) => {
+                    let options = {
+                        #[allow(unused_mut)]
+                        let mut options = <<u8 as deno_core::webidl::WebIdlConverter<
+                            'a,
+                        >>::Options as Default>::default();
+                        options
+                    };
+                    <u8 as deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::convert(
+                        scope,
+                        value,
+                        prefix.clone(),
+                        || ::std::borrow::Cow::Owned(
+                            format!("{}, member '{}'", context(), "context"),
+                        ),
+                        &options,
+                    )?
+                }
+                None => {
+                    return Err(
+                        deno_core::_ops::required_member_error(
+                            &prefix,
+                            &context,
+                            "context",
+                            "Shadowing",
+                        ),
+                    );
+                }
+            }
+        };
+        let __webidl_member_1: u8 = {
+            let raw = deno_core::_ops::dictionary_member(
+                scope,
+                dictionary,
+                "dictionary",
+                &prefix,
+                &context,
+            )?;
+            match raw {
+                Some(value) => {
+                    let options = {
+                        #[allow(unused_mut)]
+                        let mut options = <<u8 as deno_core::webidl::WebIdlConverter<
+                            'a,
+                        >>::Options as Default>::default();
+                        options
+                    };
+                    <u8 as deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::convert(
+                        scope,
+                        value,
+                        prefix.clone(),
+                        || ::std::borrow::Cow::Owned(
+                            format!("{}, member '{}'", context(), "dictionary"),
+                        ),
+                        &options,
+                    )?
+                }
+                None => 1,
+            }
+        };
+        let __webidl_member_2: bool = {
+            let raw = deno_core::_ops::dictionary_member(
+                scope,
+                dictionary,
+                "prefix",
+                &prefix,
+                &context,
+            )?;
+            match raw {
+                Some(value) => {
+                    let options = {
+                        #[allow(unused_mut)]
+                        let mut options = <<bool as deno_core::webidl::WebIdlConverter<
+                            'a,
+                        >>::Options as Default>::default();
+                        options
+                    };
+                    <bool as deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::convert(
+                        scope,
+                        value,
+                        prefix.clone(),
+                        || ::std::borrow::Cow::Owned(
+                            format!("{}, member '{}'", context(), "prefix"),
+                        ),
+                        &options,
+                    )?
+                }
+                None => {
+                    return Err(
+                        deno_core::_ops::required_member_error(
+                            &prefix,
+                            &context,
+                            "prefix",
+                            "Shadowing",
+                        ),
+                    );
+                }
+            }
+        };
+        let __webidl_member_3: Option<String> = {
+            let raw = deno_core::_ops::dictionary_member(
+                scope,
+                dictionary,
+                "scope",
+                &prefix,
+                &context,
+            )?;
+            match raw {
+                Some(value) => {
+                    let options = {
+                        #[allow(unused_mut)]
+                        let mut options = <<Option<
+                            String,
+                        > as deno_core::webidl::WebIdlConverter<
+                            'a,
+                        >>::Options as Default>::default();
+                        options
+                    };
+                    <Option<
+                        String,
+                    > as deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::convert(
+                        scope,
+                        value,
+                        prefix.clone(),
+                        || ::std::borrow::Cow::Owned(
+                            format!("{}, member '{}'", context(), "scope"),
+                        ),
+                        &options,
+                    )?
+                }
+                None => None,
+            }
+        };
+        let __webidl_member_4: u8 = {
+            let raw = deno_core::_ops::dictionary_member(
+                scope,
+                dictionary,
+                "value",
+                &prefix,
+                &context,
+            )?;
+            match raw {
+                Some(value) => {
+                    let options = {
+                        #[allow(unused_mut)]
+                        let mut options = <<u8 as deno_core::webidl::WebIdlConverter<
+                            'a,
+                        >>::Options as Default>::default();
+                        options
+                    };
+                    <u8 as deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::convert(
+                        scope,
+                        value,
+                        prefix.clone(),
+                        || ::std::borrow::Cow::Owned(
+                            format!("{}, member '{}'", context(), "value"),
+                        ),
+                        &options,
+                    )?
+                }
+                None => {
+                    return Err(
+                        deno_core::_ops::required_member_error(
+                            &prefix,
+                            &context,
+                            "value",
+                            "Shadowing",
+                        ),
+                    );
+                }
+            }
+        };
+        Ok(Self {
+            context: __webidl_member_0,
+            dictionary: __webidl_member_1,
+            prefix: __webidl_member_2,
+            scope: __webidl_member_3,
+            value: __webidl_member_4,
+        })
+    }
+}

@@ -38,10 +38,20 @@ pub(crate) fn generate_dispatch_slow_call(
   // the scope/opstate in the intermediate stages.
   let mut args = TokenStream::new();
   let mut deferred = TokenStream::new();
+  // Async ops pass the promise ID as their first JavaScript argument. It is not
+  // part of the argument numbering that error messages report.
+  let first_input_index = input_index;
 
   for (index, arg) in signature.args.iter().enumerate() {
-    let arg_mapped = from_arg(generator_state, index, arg, &signature.ret_val)
-      .map_err(|s| V8SignatureMappingError::NoArgMapping(s, arg.clone()))?;
+    // `from_arg` takes the 0-based JavaScript argument index, after the promise ID.
+    let arg_mapped = from_arg(
+      generator_state,
+      index,
+      input_index - first_input_index,
+      arg,
+      &signature.ret_val,
+    )
+    .map_err(|s| V8SignatureMappingError::NoArgMapping(s, arg.clone()))?;
     if arg.is_virtual() {
       deferred.extend(arg_mapped);
     } else {
@@ -355,6 +365,7 @@ pub fn extract_arg(
 pub fn from_arg(
   mut generator_state: &mut GeneratorState,
   index: usize,
+  input_index: usize,
   arg: &Arg,
   ret_val: &RetVal,
 ) -> Result<TokenStream, V8MappingError> {
@@ -411,6 +422,7 @@ pub fn from_arg(
       let some = from_arg(
         generator_state,
         index,
+        input_index,
         &Arg::Numeric(*numeric, *flag),
         ret_val,
       )?;
@@ -642,6 +654,24 @@ pub fn from_arg(
           Ok(t) => t,
           Err(#err) => {
             #throw_exception;
+          }
+        };
+      }
+    }
+    Arg::WebIdl(ty) => {
+      *needs_scope = true;
+      let ty =
+        syn::parse_str::<syn::Type>(ty).expect("Failed to reparse webidl type");
+      let scope = scope.clone();
+      let prefix = format!("Failed to execute '{}'", generator_state.op_name);
+      // The 1-based position of the JavaScript argument, for error messages.
+      let position = input_index + 1;
+      quote! {
+        let #arg_ident = match deno_core::_ops::convert_op_arg::<#ty>(&mut #scope, #arg_ident, #prefix, #position) {
+          Ok(t) => t,
+          Err(exception) => {
+            #scope.throw_exception(exception);
+            return 1;
           }
         };
       }

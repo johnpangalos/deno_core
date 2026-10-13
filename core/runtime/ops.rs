@@ -574,6 +574,11 @@ mod tests {
     ops = [
       op_test_fail,
       op_test_print_debug,
+      op_test_webidl_u8,
+      op_test_webidl_second,
+      op_test_webidl_dict,
+      op_test_webidl_vec,
+      op_test_webidl_async,
 
       op_test_add,
       op_test_add_smi_unsigned,
@@ -673,6 +678,37 @@ mod tests {
 
   thread_local! {
     static FAIL: Cell<bool> = const { Cell::new(false) }
+  }
+
+  #[derive(crate::WebIDL)]
+  #[webidl(dictionary)]
+  pub struct TestDict {
+    pub foo_bar: u8,
+  }
+
+  #[op2]
+  pub fn op_test_webidl_u8(#[webidl] value: u8) -> u32 {
+    value as u32
+  }
+
+  #[op2]
+  pub fn op_test_webidl_second(first: u8, #[webidl] second: u8) -> u32 {
+    first as u32 + second as u32
+  }
+
+  #[op2]
+  pub fn op_test_webidl_dict(#[webidl] dict: TestDict) -> u32 {
+    dict.foo_bar as u32
+  }
+
+  #[op2]
+  pub fn op_test_webidl_vec(#[webidl] values: Vec<u8>) -> u32 {
+    values.iter().map(|v| *v as u32).sum()
+  }
+
+  #[op2(async)]
+  pub async fn op_test_webidl_async(#[webidl] value: u8) -> u32 {
+    value as u32
   }
 
   #[op2(fast)]
@@ -1212,6 +1248,104 @@ mod tests {
     #[string(onebyte)] s: Cow<[u8]>,
   ) -> Cow<[u8]> {
     s
+  }
+
+  #[test]
+  pub fn test_op_webidl() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      1,
+      "op_test_webidl_u8",
+      "assert(op_test_webidl_u8(256) === 0 && op_test_webidl_u8(-1) === 255)",
+    )?;
+    // A failed conversion throws a TypeError naming the op and the argument.
+    run_test2(
+      1,
+      "op_test_webidl_u8",
+      r#"
+        try {
+          op_test_webidl_u8(Symbol());
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assert(e.message === "Failed to execute 'op_test_webidl_u8': Argument 1 is a Symbol and can not be converted to a number.");
+        }
+      "#,
+    )?;
+    run_test2(
+      1,
+      "op_test_webidl_second",
+      r#"
+        try {
+          op_test_webidl_second(1, 10n);
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assert(e.message === "Failed to execute 'op_test_webidl_second': Argument 2 is a BigInt and can not be converted to a number.");
+        }
+        assert(op_test_webidl_second(1, "2") === 3);
+      "#,
+    )?;
+    // A getter that throws is rethrown unchanged.
+    run_test2(
+      1,
+      "op_test_webidl_dict",
+      r#"
+        const thrown = new RangeError("boom");
+        try {
+          op_test_webidl_dict({ get fooBar() { throw thrown; } });
+          assert(false);
+        } catch (e) {
+          assert(e === thrown);
+        }
+        assert(op_test_webidl_dict({ fooBar: 7 }) === 7);
+        try {
+          op_test_webidl_dict(5);
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assert(e.message === "Failed to execute 'op_test_webidl_dict': Argument 1 can not be converted to 'TestDict' because it is not an object.");
+        }
+      "#,
+    )?;
+    // An iterator whose next throws is rethrown unchanged.
+    run_test2(
+      1,
+      "op_test_webidl_vec",
+      r#"
+        const thrown = new RangeError("next");
+        const iterable = { [Symbol.iterator]() { return { next() { throw thrown; } }; } };
+        try {
+          op_test_webidl_vec(iterable);
+          assert(false);
+        } catch (e) {
+          assert(e === thrown);
+        }
+        assert(op_test_webidl_vec([1, 2, 3]) === 6);
+      "#,
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_async() -> Result<(), Box<dyn std::error::Error>>
+  {
+    // The promise ID is not counted, so the first JavaScript argument is 1.
+    run_async_test(
+      1,
+      "op_test_webidl_async",
+      r#"
+        try {
+          await op_test_webidl_async(Symbol());
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assert(e.message === "Failed to execute 'op_test_webidl_async': Argument 1 is a Symbol and can not be converted to a number.");
+        }
+        assert(await op_test_webidl_async(7) === 7);
+      "#,
+    )
+    .await?;
+    Ok(())
   }
 
   #[tokio::test]

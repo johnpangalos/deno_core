@@ -32,6 +32,7 @@ mod runtime;
 mod source_map;
 mod tasks;
 mod web_timeout;
+pub mod webidl;
 
 // Re-exports
 pub use anyhow;
@@ -52,6 +53,7 @@ pub use url;
 pub use v8;
 
 pub use deno_ops::op2;
+pub use deno_ops::WebIDL;
 
 pub use crate::async_cancel::CancelFuture;
 pub use crate::async_cancel::CancelHandle;
@@ -192,6 +194,10 @@ pub mod _ops {
   pub use super::runtime::ops_rust_to_v8::*;
   pub use super::runtime::V8_WRAPPER_OBJECT_INDEX;
   pub use super::runtime::V8_WRAPPER_TYPE_INDEX;
+  pub use super::webidl::convert_op_arg;
+  pub use super::webidl::dictionary_member;
+  pub use super::webidl::dictionary_object;
+  pub use super::webidl::required_member_error;
 }
 
 pub mod snapshot {

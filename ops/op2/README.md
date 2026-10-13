@@ -911,6 +911,20 @@ Only usable in `deno_core`.
 <td>
 
 ```text
+#[webidl] T
+```
+
+</td><td>
+
+</td><td>
+any
+</td><td>
+Converted with `deno_core::webidl::WebIdlConverter` (see [WebIDL conversions](#webidl-conversions)). Throws a `TypeError` on failure, or rethrows an exception thrown by JavaScript during the conversion. Not fast.
+</td></tr>
+<tr>
+<td>
+
+```text
 *mut v8::Isolate
 ```
 
@@ -1652,3 +1666,39 @@ v8::Local<v8::...>
 </table>
 
 <!-- END RV -->
+
+## WebIDL conversions
+
+`#[webidl]` converts an argument with `deno_core::webidl::WebIdlConverter`, which
+follows the WebIDL [JavaScript-to-IDL type mapping](https://webidl.spec.whatwg.org/#js-type-mapping).
+It is a good fit for arguments whose JavaScript shape is defined by a web
+standard, such as dictionaries (`{ fooBar: 1 }`), enums (`"foo-bar"`),
+sequences, records, and `[EnforceRange]` or `[Clamp]` integers:
+
+```ignore
+#[derive(deno_core::WebIDL)]
+#[webidl(dictionary)]
+struct Options {
+  #[options(enforce_range = true)]
+  port: u16,
+  #[webidl(default = "localhost".to_string())]
+  host: String,
+  #[webidl(rename = "Tags")]
+  tags: Option<Vec<String>>,
+}
+
+#[op2]
+fn op_listen(#[webidl] options: Options) {}
+```
+
+The conversion's prefix names the op (for example `Failed to execute 'op_listen'`),
+and the context names the argument (for example `Argument 1`), so a bad value
+throws a `TypeError` such as `Failed to execute 'op_listen': Argument 1, member 'port' is outside the range [0, 65535].`
+If JavaScript code throws during the conversion (for example a getter), the
+op rethrows that exception unchanged. Ops with `#[webidl]` arguments always use
+the slow path.
+
+Converter options are set with `#[options(...)]` on a dictionary member, or
+passed to `WebIdlConverter::convert` directly. Dictionaries and enums are
+derived with `#[derive(deno_core::WebIDL)]`, marked `#[webidl(dictionary)]` or
+`#[webidl(enum)]`.
