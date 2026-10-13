@@ -38,6 +38,8 @@ pub struct GeneratorState {
   pub promise_id: Ident,
   /// Type of the self argument
   pub self_ty: Ident,
+  /// The prefix of WebIDL conversion errors, eg: "Failed to execute 'op_foo'"
+  pub webidl_prefix: String,
 
   pub moves: Vec<TokenStream>,
 

@@ -551,6 +551,7 @@ mod tests {
   use crate::OpState;
   use crate::RuntimeOptions;
   use crate::ToV8;
+  use crate::WebIDL;
   use anyhow::bail;
   use anyhow::Error;
   use bytes::BytesMut;
@@ -664,6 +665,8 @@ mod tests {
       op_smi_to_from_v8,
       op_number_to_from_v8,
       op_bool_to_from_v8,
+
+      op_webidl,
     ],
     state = |state| {
       state.put(1234u32);
@@ -2500,6 +2503,82 @@ mod tests {
       err.to_string(),
       "TypeError: Expected boolean\n    at <anonymous>:4:7"
     );
+    Ok(())
+  }
+
+  #[derive(WebIDL)]
+  #[webidl(dictionary)]
+  pub struct WebIdlDict {
+    #[webidl(required)]
+    name: String,
+    #[webidl(default = 1)]
+    #[options(enforce_range = true)]
+    count: u8,
+  }
+
+  #[op2]
+  #[string]
+  pub fn op_webidl(
+    #[webidl] s: String,
+    #[state] _state: &u32,
+    #[webidl] n: u8,
+    #[webidl] dict: WebIdlDict,
+  ) -> String {
+    format!("{s} {n} {} {}", dict.name, dict.count)
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_SLOW_ITERATIONS,
+      "op_webidl",
+      r#"
+      assert(op_webidl(1, 257, { name: "x" }) === "1 1 x 1");
+      assert(op_webidl("a", "2", { name: 3, count: 4 }) === "a 2 3 4");
+
+      function assertThrows(f, ty, message) {
+        let thrown;
+        try {
+          f();
+        } catch (e) {
+          thrown = e;
+        }
+        assert(thrown instanceof ty);
+        assert(thrown.message === message);
+      }
+      assertThrows(
+        () => op_webidl("a", 1, {}),
+        TypeError,
+        "Failed to execute 'op_webidl': Argument 3 can not be converted to 'WebIdlDict' because 'name' is required in 'WebIdlDict'",
+      );
+      assertThrows(
+        () => op_webidl("a", 1, 1),
+        TypeError,
+        "Failed to execute 'op_webidl': Argument 3 can not be converted to dictionary",
+      );
+      assertThrows(
+        () => op_webidl("a", 1, { name: "x", count: 256 }),
+        TypeError,
+        "Failed to execute 'op_webidl': 'count' of 'WebIdlDict' (Argument 3) is outside the accepted range of 0 to 255, inclusive",
+      );
+      // Exceptions thrown during the conversion are rethrown.
+      assertThrows(
+        () => op_webidl({ toString() { throw new RangeError("boom") } }, 1, { name: "x" }),
+        RangeError,
+        "boom",
+      );
+      assertThrows(
+        () => op_webidl("a", 1n, { name: "x" }),
+        TypeError,
+        "Cannot convert a BigInt value to a number",
+      );
+      assertThrows(
+        () => op_webidl("a", 1, { get name() { throw new Error("getter") } }),
+        Error,
+        "getter",
+      );
+      "#,
+    )?;
     Ok(())
   }
 }

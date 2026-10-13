@@ -170,8 +170,20 @@ pub(crate) fn generate_op2(
     Ident::new("UNINIT", Span::call_site())
   };
 
+  let webidl_prefix = match &config.self_name {
+    Some(class) if config.constructor => {
+      format!("Failed to construct '{class}'")
+    }
+    Some(class) if config.static_member => {
+      format!("Failed to execute '{class}.{orig_name}'")
+    }
+    Some(class) => format!("Failed to execute '{orig_name}' on '{class}'"),
+    None => format!("Failed to execute '{orig_name}'"),
+  };
+
   let base_generator_state = GeneratorState {
     name,
+    webidl_prefix,
     args: args.clone(),
     fn_args,
     scope,

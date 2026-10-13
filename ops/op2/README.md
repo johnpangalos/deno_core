@@ -91,6 +91,78 @@ over if the parameters are compatible. This is useful for a function that takes
 any buffer type in the slow path and wishes to use the very fast typed `u8`
 buffer for the fast path.
 
+## WebIDL
+
+Arguments marked with `#[webidl]` are converted the way web APIs specify, using
+the JavaScript-to-IDL conversions of the
+[WebIDL specification](https://webidl.spec.whatwg.org/#js-type-mapping). The
+argument's type must implement `deno_core::webidl::WebIdlConverter`, and is
+converted with its default options. `deno_core::webidl` implements it for:
+
+| WebIDL type             | Rust type                                    |
+| ----------------------- | -------------------------------------------- |
+| `any`                   | `v8::Local<v8::Value>`                       |
+| `boolean`               | `bool`                                       |
+| `byte`, `octet`         | `i8`, `u8`                                   |
+| `short`, `long`         | `i16`, `u16`, `i32`, `u32`                   |
+| `long long`             | `i64`, `u64`                                 |
+| `float`, `double`       | `f32`, `f64`                                 |
+| `unrestricted float`    | `UnrestrictedFloat`                          |
+| `unrestricted double`   | `UnrestrictedDouble`                         |
+| `bigint`                | `BigInt`                                     |
+| `DOMString`             | `String`                                     |
+| `ByteString`            | `ByteString`                                 |
+| `T?`                    | `Option<T>`                                  |
+| `sequence<T>`           | `Vec<T>`                                     |
+| `record<DOMString, T>`  | `HashMap<String, T>`                         |
+| dictionaries and enums  | types with `#[derive(WebIDL)]`               |
+
+If the value can't be converted, the op throws a `TypeError` whose message
+names the op and the argument, eg:
+`Failed to execute 'op_fetch': Argument 1 is not a finite number`. If the
+conversion runs JavaScript that throws (eg: a `valueOf` or a getter), that
+exception is rethrown instead.
+
+```rust,ignore
+#[derive(WebIDL)]
+#[webidl(dictionary)]
+pub struct FetchInit {
+  #[webidl(default = String::from("GET"))]
+  method: String,
+  #[options(enforce_range = true)]
+  priority: Option<u8>,
+  mode: FetchMode,
+}
+
+#[derive(WebIDL)]
+#[webidl(enum)]
+pub enum FetchMode {
+  Cors,
+  NoCors,
+}
+
+#[op2]
+fn op_fetch(#[webidl] input: String, #[webidl] init: FetchInit) {
+  // ...
+}
+```
+
+`#[derive(WebIDL)]` supports these attributes:
+
+- `#[webidl(dictionary)]` on a struct with named fields. Each field is the
+  member whose key is the field name in camelCase.
+  - `#[webidl(rename = "key")]` uses a different key.
+  - `#[webidl(default = <expr>)]` is the value of a missing or undefined
+    member.
+  - `#[webidl(required)]` makes missing or undefined an error.
+  - `#[options(<field> = <value>, ...)]` sets the member converter's options,
+    eg: `#[options(clamp = true)]`.
+  - A missing or undefined member without a default is `None` for an `Option`
+    field, and an error otherwise.
+- `#[webidl(enum)]` on an enum of unit variants. Each variant matches the
+  variant name in kebab-case (`FooBar` is `"foo-bar"`), or
+  `#[webidl(rename = "value")]`.
+
 # Parameters
 
 <!-- START ARGS -->
@@ -584,6 +656,20 @@ any
 any
 </td><td>
 ⚠️ May be slow.
+</td></tr>
+<tr>
+<td>
+
+```text
+#[webidl] WebIdlType
+```
+
+</td><td>
+
+</td><td>
+any
+</td><td>
+Converted with the type's `WebIdlConverter`. See "WebIDL" above.
 </td></tr>
 <tr>
 <td>

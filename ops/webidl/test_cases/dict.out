@@ -1,0 +1,349 @@
+impl<'a> ::deno_core::webidl::WebIdlConverter<'a> for Dict {
+    type Options = ();
+    #[allow(clippy::field_reassign_with_default)]
+    fn convert<C>(
+        __scope: &mut ::deno_core::v8::HandleScope<'a>,
+        __value: ::deno_core::v8::Local<'a, ::deno_core::v8::Value>,
+        __prefix: ::std::borrow::Cow<'static, str>,
+        __context: C,
+        __options: &Self::Options,
+    ) -> ::std::result::Result<Self, ::deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        let __object = ::deno_core::webidl::dictionary_object(
+            __value,
+            &__prefix,
+            &__context,
+        )?;
+        let __member0: u8 = match ::deno_core::webidl::dictionary_member(
+            __scope,
+            __object,
+            "a",
+            &__prefix,
+            &__context,
+        )? {
+            ::std::option::Option::Some(__value) => {
+                <u8 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    __scope,
+                    __value,
+                    __prefix.clone(),
+                    || ::std::format!("{} ({})", "'a' of 'Dict'", __context()).into(),
+                    &::std::default::Default::default(),
+                )?
+            }
+            ::std::option::Option::None => {
+                return ::std::result::Result::Err(
+                    ::deno_core::webidl::WebIdlError::new(
+                        __prefix,
+                        &__context,
+                        ::deno_core::webidl::WebIdlErrorKind::DictionaryCannotConvertKey {
+                            converter: "Dict",
+                            key: "a",
+                        },
+                    ),
+                );
+            }
+        };
+        let __member1: Vec<u16> = match ::deno_core::webidl::dictionary_member(
+            __scope,
+            __object,
+            "b",
+            &__prefix,
+            &__context,
+        )? {
+            ::std::option::Option::Some(__value) => {
+                <Vec<
+                    u16,
+                > as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    __scope,
+                    __value,
+                    __prefix.clone(),
+                    || ::std::format!("{} ({})", "'b' of 'Dict'", __context()).into(),
+                    {
+                        let mut __options = <Vec<
+                            u16,
+                        > as ::deno_core::webidl::WebIdlConverter<
+                            'a,
+                        >>::Options::default();
+                        __options.clamp = true;
+                        &{ __options }
+                    },
+                )?
+            }
+            ::std::option::Option::None => {
+                return ::std::result::Result::Err(
+                    ::deno_core::webidl::WebIdlError::new(
+                        __prefix,
+                        &__context,
+                        ::deno_core::webidl::WebIdlErrorKind::DictionaryCannotConvertKey {
+                            converter: "Dict",
+                            key: "b",
+                        },
+                    ),
+                );
+            }
+        };
+        let __member2: Option<u32> = match ::deno_core::webidl::dictionary_member(
+            __scope,
+            __object,
+            "c",
+            &__prefix,
+            &__context,
+        )? {
+            ::std::option::Option::Some(__value) => {
+                <Option<
+                    u32,
+                > as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    __scope,
+                    __value,
+                    __prefix.clone(),
+                    || ::std::format!("{} ({})", "'c' of 'Dict'", __context()).into(),
+                    {
+                        let mut __options = <Option<
+                            u32,
+                        > as ::deno_core::webidl::WebIdlConverter<
+                            'a,
+                        >>::Options::default();
+                        __options.enforce_range = true;
+                        &{ __options }
+                    },
+                )?
+            }
+            ::std::option::Option::None => Some(3),
+        };
+        let __member3: u16 = match ::deno_core::webidl::dictionary_member(
+            __scope,
+            __object,
+            "e",
+            &__prefix,
+            &__context,
+        )? {
+            ::std::option::Option::Some(__value) => {
+                <u16 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    __scope,
+                    __value,
+                    __prefix.clone(),
+                    || ::std::format!("{} ({})", "'e' of 'Dict'", __context()).into(),
+                    &::std::default::Default::default(),
+                )?
+            }
+            ::std::option::Option::None => {
+                return ::std::result::Result::Err(
+                    ::deno_core::webidl::WebIdlError::new(
+                        __prefix,
+                        &__context,
+                        ::deno_core::webidl::WebIdlErrorKind::DictionaryCannotConvertKey {
+                            converter: "Dict",
+                            key: "e",
+                        },
+                    ),
+                );
+            }
+        };
+        let __member4: std::collections::HashMap<String, u32> = match ::deno_core::webidl::dictionary_member(
+            __scope,
+            __object,
+            "f",
+            &__prefix,
+            &__context,
+        )? {
+            ::std::option::Option::Some(__value) => {
+                <std::collections::HashMap<
+                    String,
+                    u32,
+                > as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    __scope,
+                    __value,
+                    __prefix.clone(),
+                    || ::std::format!("{} ({})", "'f' of 'Dict'", __context()).into(),
+                    &::std::default::Default::default(),
+                )?
+            }
+            ::std::option::Option::None => {
+                return ::std::result::Result::Err(
+                    ::deno_core::webidl::WebIdlError::new(
+                        __prefix,
+                        &__context,
+                        ::deno_core::webidl::WebIdlErrorKind::DictionaryCannotConvertKey {
+                            converter: "Dict",
+                            key: "f",
+                        },
+                    ),
+                );
+            }
+        };
+        let __member5: Option<u32> = match ::deno_core::webidl::dictionary_member(
+            __scope,
+            __object,
+            "g",
+            &__prefix,
+            &__context,
+        )? {
+            ::std::option::Option::Some(__value) => {
+                <Option<
+                    u32,
+                > as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    __scope,
+                    __value,
+                    __prefix.clone(),
+                    || ::std::format!("{} ({})", "'g' of 'Dict'", __context()).into(),
+                    &::std::default::Default::default(),
+                )?
+            }
+            ::std::option::Option::None => {
+                return ::std::result::Result::Err(
+                    ::deno_core::webidl::WebIdlError::new(
+                        __prefix,
+                        &__context,
+                        ::deno_core::webidl::WebIdlErrorKind::DictionaryCannotConvertKey {
+                            converter: "Dict",
+                            key: "g",
+                        },
+                    ),
+                );
+            }
+        };
+        let __member6: String = match ::deno_core::webidl::dictionary_member(
+            __scope,
+            __object,
+            "someLongName",
+            &__prefix,
+            &__context,
+        )? {
+            ::std::option::Option::Some(__value) => {
+                <String as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    __scope,
+                    __value,
+                    __prefix.clone(),
+                    || {
+                        ::std::format!(
+                            "{} ({})",
+                            "'someLongName' of 'Dict'",
+                            __context(),
+                        )
+                            .into()
+                    },
+                    &::std::default::Default::default(),
+                )?
+            }
+            ::std::option::Option::None => {
+                return ::std::result::Result::Err(
+                    ::deno_core::webidl::WebIdlError::new(
+                        __prefix,
+                        &__context,
+                        ::deno_core::webidl::WebIdlErrorKind::DictionaryCannotConvertKey {
+                            converter: "Dict",
+                            key: "someLongName",
+                        },
+                    ),
+                );
+            }
+        };
+        let __member7: Option<String> = match ::deno_core::webidl::dictionary_member(
+            __scope,
+            __object,
+            "type",
+            &__prefix,
+            &__context,
+        )? {
+            ::std::option::Option::Some(__value) => {
+                <Option<
+                    String,
+                > as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    __scope,
+                    __value,
+                    __prefix.clone(),
+                    || ::std::format!("{} ({})", "'type' of 'Dict'", __context()).into(),
+                    &::std::default::Default::default(),
+                )?
+            }
+            ::std::option::Option::None => ::std::option::Option::None,
+        };
+        ::std::result::Result::Ok(Self {
+            a: __member0,
+            b: __member1,
+            c: __member2,
+            d: __member3,
+            f: __member4,
+            g: __member5,
+            some_long_name: __member6,
+            r#type: __member7,
+        })
+    }
+}
+
+impl<'s> ::deno_core::webidl::WebIdlConverter<'s> for WithLifetime<'s> {
+    type Options = ();
+    #[allow(clippy::field_reassign_with_default)]
+    fn convert<C>(
+        __scope: &mut ::deno_core::v8::HandleScope<'s>,
+        __value: ::deno_core::v8::Local<'s, ::deno_core::v8::Value>,
+        __prefix: ::std::borrow::Cow<'static, str>,
+        __context: C,
+        __options: &Self::Options,
+    ) -> ::std::result::Result<Self, ::deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        let __object = ::deno_core::webidl::dictionary_object(
+            __value,
+            &__prefix,
+            &__context,
+        )?;
+        let __member0: v8::Local<'s, v8::Value> = match ::deno_core::webidl::dictionary_member(
+            __scope,
+            __object,
+            "any",
+            &__prefix,
+            &__context,
+        )? {
+            ::std::option::Option::Some(__value) => {
+                <v8::Local<
+                    's,
+                    v8::Value,
+                > as ::deno_core::webidl::WebIdlConverter<
+                    's,
+                >>::convert(
+                    __scope,
+                    __value,
+                    __prefix.clone(),
+                    || {
+                        ::std::format!("{} ({})", "'any' of 'WithLifetime'", __context())
+                            .into()
+                    },
+                    &::std::default::Default::default(),
+                )?
+            }
+            ::std::option::Option::None => {
+                return ::std::result::Result::Err(
+                    ::deno_core::webidl::WebIdlError::new(
+                        __prefix,
+                        &__context,
+                        ::deno_core::webidl::WebIdlErrorKind::DictionaryCannotConvertKey {
+                            converter: "WithLifetime",
+                            key: "any",
+                        },
+                    ),
+                );
+            }
+        };
+        ::std::result::Result::Ok(Self { any: __member0 })
+    }
+}
