@@ -38,10 +38,16 @@ pub(crate) fn generate_dispatch_slow_call(
   // the scope/opstate in the intermediate stages.
   let mut args = TokenStream::new();
   let mut deferred = TokenStream::new();
+  // The 1-based position of the argument as seen by JavaScript, for error messages.
+  let mut position = 0;
 
   for (index, arg) in signature.args.iter().enumerate() {
-    let arg_mapped = from_arg(generator_state, index, arg, &signature.ret_val)
-      .map_err(|s| V8SignatureMappingError::NoArgMapping(s, arg.clone()))?;
+    if !arg.is_virtual() {
+      position += 1;
+    }
+    let arg_mapped =
+      from_arg(generator_state, index, position, arg, &signature.ret_val)
+        .map_err(|s| V8SignatureMappingError::NoArgMapping(s, arg.clone()))?;
     if arg.is_virtual() {
       deferred.extend(arg_mapped);
     } else {
@@ -276,6 +282,22 @@ pub(crate) fn with_required_check(
   )
 }
 
+/// The prefix of WebIDL conversion error messages, naming the op.
+fn webidl_prefix(generator_state: &GeneratorState) -> String {
+  let GeneratorState {
+    orig_name, self_ty, ..
+  } = generator_state;
+  if generator_state.needs_self {
+    format!("Failed to execute '{orig_name}' on '{self_ty}'")
+  } else if generator_state.use_this_cppgc {
+    format!("Failed to construct '{self_ty}'")
+  } else if self_ty == "UNINIT" {
+    format!("Failed to execute '{orig_name}'")
+  } else {
+    format!("Failed to execute '{self_ty}.{orig_name}'")
+  }
+}
+
 pub(crate) fn with_opctx(generator_state: &mut GeneratorState) -> TokenStream {
   generator_state.needs_args = true;
   gs_quote!(generator_state(opctx, fn_args) =>
@@ -355,6 +377,7 @@ pub fn extract_arg(
 pub fn from_arg(
   mut generator_state: &mut GeneratorState,
   index: usize,
+  position: usize,
   arg: &Arg,
   ret_val: &RetVal,
 ) -> Result<TokenStream, V8MappingError> {
@@ -411,6 +434,7 @@ pub fn from_arg(
       let some = from_arg(
         generator_state,
         index,
+        position,
         &Arg::Numeric(*numeric, *flag),
         ret_val,
       )?;
@@ -639,6 +663,30 @@ pub fn from_arg(
       let throw_exception = throw_type_error_string(generator_state, &err)?;
       quote! {
         let #arg_ident = match <#ty as deno_core::FromV8>::from_v8(&mut #scope, #arg_ident) {
+          Ok(t) => t,
+          Err(#err) => {
+            #throw_exception;
+          }
+        };
+      }
+    }
+    Arg::WebIDL(ty) => {
+      *needs_scope = true;
+      let ty =
+        syn::parse_str::<syn::Type>(ty).expect("Failed to reparse state type");
+      let scope = scope.clone();
+      let err = format_ident!("{}_err", arg_ident);
+      let throw_exception = throw_type_error_string(generator_state, &err)?;
+      let prefix = webidl_prefix(generator_state);
+      let context = format!("Argument {position}");
+      quote! {
+        let #arg_ident = match <#ty as deno_core::webidl::WebIdlConverter>::convert(
+          &mut #scope,
+          #arg_ident,
+          ::std::borrow::Cow::Borrowed(#prefix),
+          || ::std::borrow::Cow::Borrowed(#context),
+          &::std::default::Default::default(),
+        ) {
           Ok(t) => t,
           Err(#err) => {
             #throw_exception;

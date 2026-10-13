@@ -664,6 +664,10 @@ mod tests {
       op_smi_to_from_v8,
       op_number_to_from_v8,
       op_bool_to_from_v8,
+
+      op_webidl,
+      op_webidl_dictionary,
+      op_webidl_async,
     ],
     state = |state| {
       state.put(1234u32);
@@ -2500,6 +2504,136 @@ mod tests {
       err.to_string(),
       "TypeError: Expected boolean\n    at <anonymous>:4:7"
     );
+    Ok(())
+  }
+
+  #[op2]
+  #[string]
+  fn op_webidl(
+    #[webidl] s: String,
+    #[webidl] n: u8,
+    #[webidl] list: Option<Vec<f64>>,
+  ) -> String {
+    format!("{s} {n} {list:?}")
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl",
+      r"
+        assert(op_webidl('a', 1, [1.5]) == 'a 1 Some([1.5])');
+        assert(op_webidl(1, 257, null) == '1 1 None');
+        assert(op_webidl({ toString: () => 'x' }, '3') == 'x 3 None');
+        try {
+          op_webidl('a', 1, [1, NaN]);
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assert(e.message == 'Failed to execute \'op_webidl\': Argument 3, index 1 is not a finite number');
+        }
+        try {
+          op_webidl(Symbol(), 1);
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assert(e.message == 'Failed to execute \'op_webidl\': Argument 1 can not be converted to \'DOMString\'');
+        }
+        try {
+          op_webidl('a', 1, 1);
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assert(e.message == 'Failed to execute \'op_webidl\': Argument 3 can not be converted to \'sequence\'');
+        }
+      ",
+    )?;
+    Ok(())
+  }
+
+  #[derive(crate::WebIDL)]
+  #[webidl(enum)]
+  enum WebIdlMode {
+    Fast,
+    VerySlow,
+  }
+
+  #[derive(crate::WebIDL)]
+  #[webidl(dictionary)]
+  struct WebIdlDictionary {
+    #[webidl(required)]
+    mode: WebIdlMode,
+    #[options(clamp = true)]
+    #[webidl(default = 10)]
+    level: u8,
+  }
+
+  #[op2]
+  fn op_webidl_dictionary(
+    #[smi] _id: u32,
+    #[webidl] dict: WebIdlDictionary,
+  ) -> u32 {
+    let mode = match dict.mode {
+      WebIdlMode::Fast => 1000,
+      WebIdlMode::VerySlow => 2000,
+    };
+    mode + dict.level as u32
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_dictionary(
+  ) -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_dictionary",
+      r"
+        assert(op_webidl_dictionary(0, { mode: 'fast' }) == 1010);
+        assert(op_webidl_dictionary(0, { mode: 'very-slow', level: 1000 }) == 2255);
+        try {
+          op_webidl_dictionary(0, {});
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assert(e.message == 'Failed to execute \'op_webidl_dictionary\': Argument 2 can not be converted to \'WebIdlDictionary\' because \'mode\' is required in \'WebIdlDictionary\'');
+        }
+        try {
+          op_webidl_dictionary(0, { mode: 'slow' });
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assert(e.message == 'Failed to execute \'op_webidl_dictionary\': \'mode\' of \'WebIdlDictionary\' (Argument 2) can not be converted to \'WebIdlMode\' because \'slow\' is not a valid enum value');
+        }
+      ",
+    )?;
+    Ok(())
+  }
+
+  #[op2(async)]
+  async fn op_webidl_async(
+    #[webidl] values: std::collections::HashMap<String, u32>,
+  ) -> u32 {
+    values.values().sum()
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_async() -> Result<(), Box<dyn std::error::Error>>
+  {
+    run_async_test(
+      10,
+      "op_webidl_async",
+      r"
+        assert(await op_webidl_async({ a: 1, b: 2 }) == 3);
+        try {
+          await op_webidl_async(1);
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assert(e.message == 'Failed to execute \'op_webidl_async\': Argument 1 can not be converted to \'record\'');
+        }
+      ",
+    )
+    .await?;
     Ok(())
   }
 }

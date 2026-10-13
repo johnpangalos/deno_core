@@ -19,6 +19,12 @@ mod tests {
     t.pass(input);
   }
 
+  #[testing_macros::fixture("../webidl/test_cases/*.rs")]
+  fn compile_test_webidl(input: PathBuf) {
+    let t = trybuild::TestCases::new();
+    t.pass(input);
+  }
+
   #[rustversion::nightly]
   #[test]
   fn compile_test_all() {
@@ -26,6 +32,7 @@ mod tests {
     // run in parallel: https://github.com/dtolnay/trybuild/pull/168)
     let t = trybuild::TestCases::new();
     t.pass("../op2/test_cases/**/*.rs");
+    t.pass("../webidl/test_cases/*.rs");
     t.compile_fail("../op2/test_cases_fail/**/*.rs");
   }
 
@@ -37,6 +44,7 @@ mod tests {
       let t = trybuild::TestCases::new();
       t.compile_fail("../op2/test_cases_fail/**/*.rs");
       t.pass("../op2/test_cases/**/*.rs");
+      t.pass("../webidl/test_cases/*.rs");
     }
   }
 }

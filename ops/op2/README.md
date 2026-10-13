@@ -91,6 +91,54 @@ over if the parameters are compatible. This is useful for a function that takes
 any buffer type in the slow path and wishes to use the very fast typed `u8`
 buffer for the fast path.
 
+## WebIDL
+
+Arguments annotated with `#[webidl]` are converted from JavaScript following
+the WebIDL specification's JavaScript-to-IDL conversion algorithms
+(<https://webidl.spec.whatwg.org/#js-type-mapping>), using the type's
+`deno_core::webidl::WebIdlConverter` implementation with default options. If
+the conversion fails, the op throws a `TypeError` whose message names the op and
+the argument, eg:
+`Failed to execute 'op_xyz': Argument 1 is not a finite number`.
+
+`WebIdlConverter` is implemented for `v8::Local<v8::Value>` (any), `bool`,
+integers, floats, strings, `Option<T>` (nullable), `Vec<T>` (sequence) and
+`HashMap<String, T>` (record), along with the wrapper types in
+`deno_core::webidl` (eg: `ByteString`, `UnrestrictedDouble`, `BigInt`).
+Dictionaries and enums can implement it with `#[derive(WebIDL)]`:
+
+```rust,ignore
+#[derive(WebIDL)]
+#[webidl(dictionary)]
+pub struct Options {
+  // Read from the `bufferSize` key, defaulting to 1024 if missing.
+  #[webidl(default = 1024)]
+  #[options(enforce_range = true)]
+  buffer_size: u32,
+  // Missing or undefined is an error.
+  #[webidl(required)]
+  mode: Mode,
+  // Missing or undefined is `None`.
+  label: Option<String>,
+}
+
+#[derive(WebIDL)]
+#[webidl(enum)]
+pub enum Mode {
+  // Matches "read-only".
+  ReadOnly,
+  #[webidl(rename = "rw")]
+  ReadWrite,
+}
+
+#[op2]
+fn op_open(#[webidl] options: Options) {
+  // ...
+}
+```
+
+WebIDL arguments are never fastcalls.
+
 # Parameters
 
 <!-- START ARGS -->
@@ -584,6 +632,20 @@ any
 any
 </td><td>
 ⚠️ May be slow.
+</td></tr>
+<tr>
+<td>
+
+```text
+#[webidl] WebIdlType
+```
+
+</td><td>
+
+</td><td>
+any
+</td><td>
+Converted with `deno_core::webidl::WebIdlConverter`, following the WebIDL spec's JavaScript-to-IDL conversion. Conversion failures throw a `TypeError`.
 </td></tr>
 <tr>
 <td>
