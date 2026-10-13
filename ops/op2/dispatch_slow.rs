@@ -646,6 +646,30 @@ pub fn from_arg(
         };
       }
     }
+    Arg::WebIdl(ty) => {
+      *needs_scope = true;
+      let ty =
+        syn::parse_str::<syn::Type>(ty).expect("Failed to reparse webidl type");
+      let scope = scope.clone();
+      let err = format_ident!("{}_err", arg_ident);
+      let throw_exception = throw_type_error_string(generator_state, &err)?;
+      let prefix = format!("Failed to execute '{}'", generator_state.orig_name);
+      let context = format!("Argument {}", index + 1);
+      quote! {
+        let #arg_ident = match <#ty as deno_core::webidl::WebIdlConverter>::convert(
+          &mut #scope,
+          #arg_ident,
+          std::borrow::Cow::Borrowed(#prefix),
+          || std::borrow::Cow::Borrowed(#context),
+          &Default::default(),
+        ) {
+          Ok(t) => t,
+          Err(#err) => {
+            #throw_exception;
+          }
+        };
+      }
+    }
     Arg::CppGcResource(ty) => {
       *needs_scope = true;
       let scope = scope.clone();

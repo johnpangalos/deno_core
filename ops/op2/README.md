@@ -589,6 +589,20 @@ any
 <td>
 
 ```text
+#[webidl] T
+```
+
+</td><td>
+
+</td><td>
+any
+</td><td>
+Converted with `deno_core::webidl::WebIdlConverter` using default options. Failures throw a `TypeError`.
+</td></tr>
+<tr>
+<td>
+
+```text
 #[arraybuffer] &mut [u8]
 ```
 

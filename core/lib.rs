@@ -32,6 +32,7 @@ mod runtime;
 mod source_map;
 mod tasks;
 mod web_timeout;
+pub mod webidl;
 
 // Re-exports
 pub use anyhow;
@@ -52,6 +53,7 @@ pub use url;
 pub use v8;
 
 pub use deno_ops::op2;
+pub use deno_ops::WebIDL;
 
 pub use crate::async_cancel::CancelFuture;
 pub use crate::async_cancel::CancelHandle;
@@ -167,6 +169,7 @@ pub use crate::runtime::V8_WRAPPER_TYPE_INDEX;
 pub use crate::source_map::SourceMapData;
 pub use crate::tasks::V8CrossThreadTaskSpawner;
 pub use crate::tasks::V8TaskSpawner;
+pub use crate::webidl::WebIdlConverter;
 
 // Ensure we can use op2 in deno_core without any hackery.
 extern crate self as deno_core;

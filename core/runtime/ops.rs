@@ -662,6 +662,10 @@ mod tests {
       op_async_serde_option_v8,
 
       op_smi_to_from_v8,
+      op_webidl_dict,
+      op_webidl_u8,
+      op_webidl_any,
+      op_webidl_two_args,
       op_number_to_from_v8,
       op_bool_to_from_v8,
     ],
@@ -2383,6 +2387,89 @@ mod tests {
       "assert((await op_async_serde_option_v8({s: 'abc'})).s == 'abc!')",
     )
     .await?;
+    Ok(())
+  }
+
+  #[derive(crate::WebIDL)]
+  #[webidl(dictionary)]
+  pub struct WebIdlDict {
+    #[webidl(required)]
+    pub foo_bar: u8,
+    #[webidl(default = 5)]
+    pub count: u32,
+  }
+
+  #[op2]
+  pub fn op_webidl_dict(#[webidl] dict: WebIdlDict) -> u32 {
+    dict.foo_bar as u32 + dict.count
+  }
+
+  #[op2]
+  pub fn op_webidl_u8(#[webidl] value: u8) -> u32 {
+    value as u32
+  }
+
+  #[op2]
+  pub fn op_webidl_any(#[webidl] value: v8::Local<v8::Value>) -> bool {
+    value.is_null()
+  }
+
+  #[op2]
+  pub fn op_webidl_two_args(#[webidl] a: u8, #[webidl] b: String) -> u32 {
+    a as u32 + b.len() as u32
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_dict() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_dict",
+      r"
+        assert(op_webidl_dict({ fooBar: 1, count: 2 }) === 3);
+        assert(op_webidl_dict({ fooBar: 1 }) === 6);
+        assert(op_webidl_dict({ fooBar: 256 }) === 5);
+        try { op_webidl_dict({ count: 2 }); assert(false) } catch (e) { assert(e instanceof TypeError); assertErrorContains(e, 'fooBar') }
+        try { op_webidl_dict(5); assert(false) } catch (e) { assert(e instanceof TypeError); assertErrorContains(e, 'Argument 1') }",
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_primitive(
+  ) -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_u8",
+      r"
+        assert(op_webidl_u8(256) === 0);
+        assert(op_webidl_u8(-1) === 255);
+        try { op_webidl_u8(Symbol()); assert(false) } catch (e) { assert(e instanceof TypeError); assertErrorContains(e, `Failed to execute 'op_webidl_u8': Argument 1`) }",
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_two_args(
+  ) -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_two_args",
+      r"
+        assert(op_webidl_two_args(1, 'abc') === 4);
+        try { op_webidl_two_args(1, Symbol()); assert(false) } catch (e) { assert(e instanceof TypeError); assertErrorContains(e, `Failed to execute 'op_webidl_two_args': Argument 2`) }",
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_any() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_any",
+      r"
+        assert(op_webidl_any(null) === true);
+        assert(op_webidl_any(undefined) === false);",
+    )?;
     Ok(())
   }
 
