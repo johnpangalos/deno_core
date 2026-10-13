@@ -93,6 +93,17 @@ buffer for the fast path.
 
 # Parameters
 
+`#[webidl]` converts an argument with `deno_core::webidl::WebIdlConverter`,
+following the WebIDL JS-to-IDL algorithms. It works for any type that implements
+the trait, including `Option<T>`, `Vec<T>`, and dictionaries and enums derived
+with `#[derive(WebIDL)]`. Conversions use the default options of the type, and
+`#[webidl]` arguments always take the slow path. If the conversion fails, the op
+throws a `TypeError` whose message is the conversion error, for example
+`Failed to execute 'op_name': Argument 1 is not a finite number.`, and the Rust
+function body does not run. A missing argument is `undefined`. `#[webidl]` can
+not be used on a return value, or combined with another conversion attribute on
+the same argument.
+
 <!-- START ARGS -->
 <table><tr><th>Rust</th><th>Fastcall</th><th>v8</th></tr>
 <tr>
@@ -584,6 +595,20 @@ any
 any
 </td><td>
 ⚠️ May be slow.
+</td></tr>
+<tr>
+<td>
+
+```text
+#[webidl] T
+```
+
+</td><td>
+
+</td><td>
+any
+</td><td>
+Converted with `WebIdlConverter` and default options. Throws a TypeError if the conversion fails. Slow path only.
 </td></tr>
 <tr>
 <td>

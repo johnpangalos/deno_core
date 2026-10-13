@@ -664,6 +664,11 @@ mod tests {
       op_smi_to_from_v8,
       op_number_to_from_v8,
       op_bool_to_from_v8,
+
+      op_webidl_number,
+      op_webidl_dict,
+      op_webidl_mode,
+      op_webidl_async,
     ],
     state = |state| {
       state.put(1234u32);
@@ -2500,6 +2505,126 @@ mod tests {
       err.to_string(),
       "TypeError: Expected boolean\n    at <anonymous>:4:7"
     );
+    Ok(())
+  }
+
+  #[derive(Debug, crate::WebIDL)]
+  #[webidl(dictionary)]
+  pub struct WebIdlDict {
+    #[webidl(default = 1)]
+    count: u8,
+    label: Option<String>,
+  }
+
+  #[derive(crate::WebIDL)]
+  #[webidl(enum)]
+  pub enum WebIdlMode {
+    FooBar,
+    Foo,
+  }
+
+  #[op2]
+  pub fn op_webidl_number(#[webidl] value: u8) -> u32 {
+    value as u32
+  }
+
+  #[op2]
+  pub fn op_webidl_dict(#[webidl] dict: WebIdlDict) -> u32 {
+    dict.count as u32 + dict.label.map_or(0, |label| label.len() as u32)
+  }
+
+  #[op2]
+  pub fn op_webidl_mode(#[webidl] mode: WebIdlMode) -> u32 {
+    match mode {
+      WebIdlMode::FooBar => 1,
+      WebIdlMode::Foo => 2,
+    }
+  }
+
+  #[op2(async)]
+  pub async fn op_webidl_async(#[webidl] values: Option<Vec<u8>>) -> u32 {
+    values.map_or(0, |values| values.len() as u32)
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_number() -> Result<(), Box<dyn std::error::Error>>
+  {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_number",
+      r#"
+        assert(op_webidl_number(300) === 44);
+        assert(op_webidl_number('12') === 12);
+        assert(op_webidl_number('abc') === 0);
+        assert(op_webidl_number(undefined) === 0);
+        try {
+          op_webidl_number({ valueOf() { throw new Error('boom') } });
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assert(e.message === "Failed to execute 'op_webidl_number': Argument 1 boom");
+        }"#,
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_dict() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_dict",
+      r#"
+        assert(op_webidl_dict({ count: 2, label: 'abc' }) === 5);
+        assert(op_webidl_dict() === 1);
+        assert(op_webidl_dict(null) === 1);
+        try {
+          op_webidl_dict(5);
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assert(e.message === "Failed to execute 'op_webidl_dict': Argument 1 can not be converted to 'WebIdlDict' because it is not an object.");
+        }"#,
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_mode() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_mode",
+      r#"
+        assert(op_webidl_mode('foo-bar') === 1);
+        assert(op_webidl_mode('foo') === 2);
+        try {
+          op_webidl_mode('bar');
+          assert(false);
+        } catch (e) {
+          assert(e instanceof TypeError);
+          assert(e.message === "Failed to execute 'op_webidl_mode': Argument 1 The provided value 'bar' is not a valid enum value of type WebIdlMode.");
+        }"#,
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_async() -> Result<(), Box<dyn std::error::Error>>
+  {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_webidl_async",
+      r#"
+        assert(op_webidl_async([1, 2]) instanceof Promise);
+        assert(op_webidl_async() instanceof Promise);
+        // Errors from async ops are delivered as a rejected promise.
+        op_webidl_async(5).then(
+          () => assert(false),
+          (e) => {
+            assert(e instanceof TypeError);
+            assert(e.message === "Failed to execute 'op_webidl_async': Argument 1 is not an object.");
+          },
+        );"#,
+    )?;
     Ok(())
   }
 }

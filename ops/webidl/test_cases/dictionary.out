@@ -1,0 +1,274 @@
+impl<'a> ::deno_core::webidl::WebIdlConverter<'a> for RequestInit {
+    type Options = ();
+    #[allow(unused_variables, unused_mut)]
+    fn convert<C>(
+        scope: &mut ::deno_core::v8::HandleScope<'a>,
+        value: ::deno_core::v8::Local<'a, ::deno_core::v8::Value>,
+        prefix: ::std::borrow::Cow<'static, str>,
+        context: C,
+        _options: &Self::Options,
+    ) -> ::std::result::Result<Self, ::deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        let __object = ::deno_core::webidl::derive_support::dictionary_object(
+            value,
+            "RequestInit",
+            &prefix,
+            &context,
+        )?;
+        let __member_0: Option<Vec<u8>> = {
+            let __context = || ::deno_core::webidl::derive_support::member_context(
+                "body",
+                "RequestInit",
+                context(),
+            );
+            let __value = ::deno_core::webidl::derive_support::dictionary_member(
+                scope,
+                __object,
+                "body",
+                &prefix,
+                &__context,
+            )?;
+            let __options = <Vec<
+                u8,
+            > as ::deno_core::webidl::WebIdlConverter<'a>>::Options::default();
+            if __value.is_undefined() {
+                None
+            } else {
+                if __value.is_null() {
+                    None
+                } else {
+                    Some(
+                        <Vec<
+                            u8,
+                        > as ::deno_core::webidl::WebIdlConverter<
+                            'a,
+                        >>::convert(
+                            scope,
+                            __value,
+                            prefix.clone(),
+                            &__context,
+                            &__options,
+                        )?,
+                    )
+                }
+            }
+        };
+        let __member_1: u32 = {
+            let __context = || ::deno_core::webidl::derive_support::member_context(
+                "custom-key",
+                "RequestInit",
+                context(),
+            );
+            let __value = ::deno_core::webidl::derive_support::dictionary_member(
+                scope,
+                __object,
+                "custom-key",
+                &prefix,
+                &__context,
+            )?;
+            let __options = <u32 as ::deno_core::webidl::WebIdlConverter<
+                'a,
+            >>::Options::default();
+            if __value.is_undefined() {
+                0
+            } else {
+                <u32 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(scope, __value, prefix.clone(), &__context, &__options)?
+            }
+        };
+        let __member_2: String = {
+            let __context = || ::deno_core::webidl::derive_support::member_context(
+                "httpMethod",
+                "RequestInit",
+                context(),
+            );
+            let __value = ::deno_core::webidl::derive_support::dictionary_member(
+                scope,
+                __object,
+                "httpMethod",
+                &prefix,
+                &__context,
+            )?;
+            let __options = <String as ::deno_core::webidl::WebIdlConverter<
+                'a,
+            >>::Options::default();
+            if __value.is_undefined() {
+                String::from("GET")
+            } else {
+                <String as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(scope, __value, prefix.clone(), &__context, &__options)?
+            }
+        };
+        let __member_3: Nested = {
+            let __context = || ::deno_core::webidl::derive_support::member_context(
+                "nested",
+                "RequestInit",
+                context(),
+            );
+            let __value = ::deno_core::webidl::derive_support::dictionary_member(
+                scope,
+                __object,
+                "nested",
+                &prefix,
+                &__context,
+            )?;
+            let __options = <Nested as ::deno_core::webidl::WebIdlConverter<
+                'a,
+            >>::Options::default();
+            if __value.is_undefined() {
+                Nested { value: 3 }
+            } else {
+                <Nested as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(scope, __value, prefix.clone(), &__context, &__options)?
+            }
+        };
+        let __member_4: u8 = {
+            let __context = || ::deno_core::webidl::derive_support::member_context(
+                "retries",
+                "RequestInit",
+                context(),
+            );
+            let __value = ::deno_core::webidl::derive_support::dictionary_member(
+                scope,
+                __object,
+                "retries",
+                &prefix,
+                &__context,
+            )?;
+            let mut __options = <u8 as ::deno_core::webidl::WebIdlConverter<
+                'a,
+            >>::Options::default();
+            __options.enforce_range = true;
+            if __value.is_undefined() {
+                return Err(
+                    ::deno_core::webidl::derive_support::required_member(
+                        prefix.clone(),
+                        context(),
+                        "RequestInit",
+                        "retries",
+                    ),
+                )
+            } else {
+                <u8 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(scope, __value, prefix.clone(), &__context, &__options)?
+            }
+        };
+        let __member_5: String = {
+            let __context = || ::deno_core::webidl::derive_support::member_context(
+                "type",
+                "RequestInit",
+                context(),
+            );
+            let __value = ::deno_core::webidl::derive_support::dictionary_member(
+                scope,
+                __object,
+                "type",
+                &prefix,
+                &__context,
+            )?;
+            let __options = <String as ::deno_core::webidl::WebIdlConverter<
+                'a,
+            >>::Options::default();
+            if __value.is_undefined() {
+                String::new()
+            } else {
+                <String as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(scope, __value, prefix.clone(), &__context, &__options)?
+            }
+        };
+        let __member_6: String = {
+            let __context = || ::deno_core::webidl::derive_support::member_context(
+                "url",
+                "RequestInit",
+                context(),
+            );
+            let __value = ::deno_core::webidl::derive_support::dictionary_member(
+                scope,
+                __object,
+                "url",
+                &prefix,
+                &__context,
+            )?;
+            let __options = <String as ::deno_core::webidl::WebIdlConverter<
+                'a,
+            >>::Options::default();
+            if __value.is_undefined() {
+                return Err(
+                    ::deno_core::webidl::derive_support::required_member(
+                        prefix.clone(),
+                        context(),
+                        "RequestInit",
+                        "url",
+                    ),
+                )
+            } else {
+                <String as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(scope, __value, prefix.clone(), &__context, &__options)?
+            }
+        };
+        Ok(Self {
+            body: __member_0,
+            renamed: __member_1,
+            http_method: __member_2,
+            nested: __member_3,
+            retries: __member_4,
+            r#type: __member_5,
+            url: __member_6,
+        })
+    }
+}
+
+impl<'a> ::deno_core::webidl::WebIdlConverter<'a> for Nested {
+    type Options = ();
+    #[allow(unused_variables, unused_mut)]
+    fn convert<C>(
+        scope: &mut ::deno_core::v8::HandleScope<'a>,
+        value: ::deno_core::v8::Local<'a, ::deno_core::v8::Value>,
+        prefix: ::std::borrow::Cow<'static, str>,
+        context: C,
+        _options: &Self::Options,
+    ) -> ::std::result::Result<Self, ::deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        let __object = ::deno_core::webidl::derive_support::dictionary_object(
+            value,
+            "Nested",
+            &prefix,
+            &context,
+        )?;
+        let __member_0: u8 = {
+            let __context = || ::deno_core::webidl::derive_support::member_context(
+                "value",
+                "Nested",
+                context(),
+            );
+            let __value = ::deno_core::webidl::derive_support::dictionary_member(
+                scope,
+                __object,
+                "value",
+                &prefix,
+                &__context,
+            )?;
+            let __options = <u8 as ::deno_core::webidl::WebIdlConverter<
+                'a,
+            >>::Options::default();
+            if __value.is_undefined() {
+                3
+            } else {
+                <u8 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(scope, __value, prefix.clone(), &__context, &__options)?
+            }
+        };
+        Ok(Self { value: __member_0 })
+    }
+}
