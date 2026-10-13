@@ -903,6 +903,7 @@ fn map_arg_to_v8_fastcall_type(
     | Arg::OptionBuffer(..)
     | Arg::SerdeV8(_)
     | Arg::FromV8(_)
+    | Arg::WebIdl(_)
     | Arg::Ref(..) => return Ok(None),
     // We don't support v8 global arguments
     Arg::V8Global(_) | Arg::OptionV8Global(_) => return Ok(None),

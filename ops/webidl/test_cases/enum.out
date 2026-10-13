@@ -1,0 +1,33 @@
+impl<'a> deno_core::webidl::WebIdlConverter<'a> for Kind {
+    type Options = ();
+    fn convert<C>(
+        scope: &mut deno_core::v8::HandleScope<'a>,
+        value: deno_core::v8::Local<'a, deno_core::v8::Value>,
+        prefix: std::borrow::Cow<'static, str>,
+        context: C,
+        _options: &Self::Options,
+    ) -> Result<Self, deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> std::borrow::Cow<'static, str>,
+    {
+        let string = deno_core::webidl::string_value(scope, value, &prefix, &context)?;
+        match string.as_str() {
+            "foo-bar" => Ok(Kind::FooBar),
+            "foo" => Ok(Kind::Foo),
+            "custom" => Ok(Kind::Renamed),
+            _ => {
+                Err(
+                    deno_core::webidl::WebIdlError::new(
+                        prefix,
+                        &context,
+                        format!(
+                            "'{}' is not a valid value for enumeration '{}'",
+                            string,
+                            "Kind",
+                        ),
+                    ),
+                )
+            }
+        }
+    }
+}

@@ -91,6 +91,56 @@ over if the parameters are compatible. This is useful for a function that takes
 any buffer type in the slow path and wishes to use the very fast typed `u8`
 buffer for the fast path.
 
+## WebIDL conversions (`#[webidl]`)
+
+`#[webidl] name: T` converts the argument with
+`<T as deno_core::webidl::WebIdlConverter>::convert`, following the WebIDL type
+mapping. The prefix is `Failed to execute '<op name>'` and the context is
+`Argument N`, where `N` is the 1-based JavaScript argument position. A
+conversion error throws a `TypeError` whose message is the `WebIdlError`, for
+example `Failed to execute 'op_foo': Argument 1 is not a finite number`. If the
+conversion runs JavaScript that throws (a getter, `valueOf`, `toString` or an
+iterator), that exception is propagated instead. BigInt conversion of a
+primitive that can not be converted (such as a number) reports a WebIdl error;
+for an object, V8's own exception from ToBigInt is propagated (for example a
+`TypeError` when its `valueOf` returns a number). In an `async` op, a conversion error rejects the returned
+promise, as other argument errors do. Conversion happens before the op's future
+is created, so the future is never started for a call with a bad argument.
+
+`#[webidl]` works with any type that implements the trait, including types op2
+also parses natively (`String`, `u32`, `Option<T>`, `Vec<T>`,
+`HashMap<String, T>`). It is not allowed on return values, and an op with a
+`#[webidl]` argument is never a fastcall.
+
+Dictionaries and enumerations derive the trait with `#[derive(WebIDL)]`:
+
+```rust,ignore
+#[derive(deno_core::WebIDL)]
+#[webidl(dictionary)]
+struct Options {
+  foo_bar: u8,                                  // key "fooBar"
+  #[webidl(rename = "type")]
+  kind: String,                                 // key "type"
+  #[webidl(default = 3)]
+  count: u32,                                   // missing: 3
+  #[webidl(required)]
+  name: String,                                 // missing: error
+  #[options(clamp = true)]
+  level: Option<u8>,                            // 300 becomes Some(255)
+}
+
+#[derive(deno_core::WebIDL)]
+#[webidl(enum)]
+enum Mode {
+  FooBar,                                       // "foo-bar"
+  #[webidl(rename = "custom")]
+  Other,                                        // "custom"
+}
+```
+
+Dictionary members are read in lexicographic order of their JavaScript keys.
+Enumeration values are matched case-sensitively.
+
 # Parameters
 
 <!-- START ARGS -->
@@ -584,6 +634,20 @@ any
 any
 </td><td>
 ⚠️ May be slow.
+</td></tr>
+<tr>
+<td>
+
+```text
+#[webidl] T
+```
+
+</td><td>
+
+</td><td>
+any type implementing deno_core::webidl::WebIdlConverter
+</td><td>
+Converted with WebIdlConverter; failures throw a TypeError. Not available as a fastcall.
 </td></tr>
 <tr>
 <td>

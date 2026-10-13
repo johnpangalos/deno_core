@@ -1,0 +1,221 @@
+impl<'a> deno_core::webidl::WebIdlConverter<'a> for Dict {
+    type Options = ();
+    fn convert<C>(
+        scope: &mut deno_core::v8::HandleScope<'a>,
+        value: deno_core::v8::Local<'a, deno_core::v8::Value>,
+        prefix: std::borrow::Cow<'static, str>,
+        context: C,
+        _options: &Self::Options,
+    ) -> Result<Self, deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> std::borrow::Cow<'static, str>,
+    {
+        let dictionary = deno_core::webidl::dictionary_object(
+            value,
+            "Dict",
+            &prefix,
+            &context,
+        )?;
+        let mut __webidl_options_0 = <Option<
+            u8,
+        > as deno_core::webidl::WebIdlConverter<'a>>::Options::default();
+        __webidl_options_0.clamp = true;
+        let __webidl_member_0: Option<u8> = match deno_core::webidl::dictionary_member::<
+            Option<u8>,
+            _,
+        >(
+            scope,
+            dictionary,
+            "Dict",
+            "clamped",
+            prefix.clone(),
+            &context,
+            &__webidl_options_0,
+        )? {
+            Some(value) => value,
+            None => None,
+        };
+        let __webidl_options_1 = <u8 as deno_core::webidl::WebIdlConverter<
+            'a,
+        >>::Options::default();
+        let __webidl_member_1: u8 = match deno_core::webidl::dictionary_member::<
+            u8,
+            _,
+        >(
+            scope,
+            dictionary,
+            "Dict",
+            "fooBar",
+            prefix.clone(),
+            &context,
+            &__webidl_options_1,
+        )? {
+            Some(value) => value,
+            None => {
+                return Err(
+                    deno_core::webidl::dictionary_missing_member(
+                        prefix.clone(),
+                        &context,
+                        "Dict",
+                        "fooBar",
+                    ),
+                );
+            }
+        };
+        let mut __webidl_options_2 = <Vec<
+            u8,
+        > as deno_core::webidl::WebIdlConverter<'a>>::Options::default();
+        __webidl_options_2.enforce_range = true;
+        let __webidl_member_2: Vec<u8> = match deno_core::webidl::dictionary_member::<
+            Vec<u8>,
+            _,
+        >(
+            scope,
+            dictionary,
+            "Dict",
+            "listed",
+            prefix.clone(),
+            &context,
+            &__webidl_options_2,
+        )? {
+            Some(value) => value,
+            None => {
+                return Err(
+                    deno_core::webidl::dictionary_missing_member(
+                        prefix.clone(),
+                        &context,
+                        "Dict",
+                        "listed",
+                    ),
+                );
+            }
+        };
+        let __webidl_options_3 = <Option<
+            bool,
+        > as deno_core::webidl::WebIdlConverter<'a>>::Options::default();
+        let __webidl_member_3: Option<bool> = match deno_core::webidl::dictionary_member::<
+            Option<bool>,
+            _,
+        >(
+            scope,
+            dictionary,
+            "Dict",
+            "maybe",
+            prefix.clone(),
+            &context,
+            &__webidl_options_3,
+        )? {
+            Some(value) => value,
+            None => None,
+        };
+        let __webidl_options_4 = <String as deno_core::webidl::WebIdlConverter<
+            'a,
+        >>::Options::default();
+        let __webidl_member_4: String = match deno_core::webidl::dictionary_member::<
+            String,
+            _,
+        >(
+            scope,
+            dictionary,
+            "Dict",
+            "renamed",
+            prefix.clone(),
+            &context,
+            &__webidl_options_4,
+        )? {
+            Some(value) => value,
+            None => {
+                return Err(
+                    deno_core::webidl::dictionary_missing_member(
+                        prefix.clone(),
+                        &context,
+                        "Dict",
+                        "renamed",
+                    ),
+                );
+            }
+        };
+        let __webidl_options_5 = <String as deno_core::webidl::WebIdlConverter<
+            'a,
+        >>::Options::default();
+        let __webidl_member_5: String = match deno_core::webidl::dictionary_member::<
+            String,
+            _,
+        >(
+            scope,
+            dictionary,
+            "Dict",
+            "requiredValue",
+            prefix.clone(),
+            &context,
+            &__webidl_options_5,
+        )? {
+            Some(value) => value,
+            None => {
+                return Err(
+                    deno_core::webidl::dictionary_missing_member(
+                        prefix.clone(),
+                        &context,
+                        "Dict",
+                        "requiredValue",
+                    ),
+                );
+            }
+        };
+        let __webidl_options_6 = <String as deno_core::webidl::WebIdlConverter<
+            'a,
+        >>::Options::default();
+        let __webidl_member_6: String = match deno_core::webidl::dictionary_member::<
+            String,
+            _,
+        >(
+            scope,
+            dictionary,
+            "Dict",
+            "type",
+            prefix.clone(),
+            &context,
+            &__webidl_options_6,
+        )? {
+            Some(value) => value,
+            None => {
+                return Err(
+                    deno_core::webidl::dictionary_missing_member(
+                        prefix.clone(),
+                        &context,
+                        "Dict",
+                        "type",
+                    ),
+                );
+            }
+        };
+        let __webidl_options_7 = <u32 as deno_core::webidl::WebIdlConverter<
+            'a,
+        >>::Options::default();
+        let __webidl_member_7: u32 = match deno_core::webidl::dictionary_member::<
+            u32,
+            _,
+        >(
+            scope,
+            dictionary,
+            "Dict",
+            "withDefault",
+            prefix.clone(),
+            &context,
+            &__webidl_options_7,
+        )? {
+            Some(value) => value,
+            None => 3,
+        };
+        Ok(Dict {
+            clamped: __webidl_member_0,
+            foo_bar: __webidl_member_1,
+            listed: __webidl_member_2,
+            maybe: __webidl_member_3,
+            other: __webidl_member_4,
+            required_value: __webidl_member_5,
+            r#type: __webidl_member_6,
+            with_default: __webidl_member_7,
+        })
+    }
+}
