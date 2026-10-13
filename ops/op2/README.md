@@ -589,6 +589,20 @@ any
 <td>
 
 ```text
+#[webidl] T
+```
+
+</td><td>
+
+</td><td>
+any
+</td><td>
+Converted with `deno_core::webidl::WebIdlConverter` using default options, so any type that implements it works (for example `Option<u8>`, `Vec<String>` or a `#[derive(WebIDL)]` dictionary). Slow path only.
+</td></tr>
+<tr>
+<td>
+
+```text
 #[arraybuffer] &mut [u8]
 ```
 

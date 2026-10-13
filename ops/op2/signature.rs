@@ -278,6 +278,7 @@ pub enum Arg {
   OptionCppGcResource(String),
   FromV8(String),
   ToV8(String),
+  WebIdl(String),
   VarArgs,
 }
 
@@ -740,6 +741,8 @@ pub enum AttributeModifier {
   ToV8,
   /// #[from_v8] for types that impl `FromV8`
   FromV8,
+  /// #[webidl] for types that impl `deno_core::webidl::WebIdlConverter`
+  WebIdl,
   /// #[smi], for non-integral ID types representing small integers (-2³¹ and 2³¹-1 on 64-bit platforms,
   /// see https://medium.com/fhinkel/v8-internals-how-small-is-a-small-integer-e0badc18b6da).
   Smi,
@@ -768,6 +771,7 @@ impl AttributeModifier {
     match self {
       AttributeModifier::ToV8 => "to_v8",
       AttributeModifier::FromV8 => "from_v8",
+      AttributeModifier::WebIdl => "webidl",
       AttributeModifier::Bigint => "bigint",
       AttributeModifier::Number => "number",
       AttributeModifier::Buffer(..) => "buffer",
@@ -817,6 +821,8 @@ pub enum AttributeError {
   InvalidAttribute(String),
   #[error("Invalid inner attribute (#![attr]) in this position. Use an equivalent outer attribute (#[attr]) on the function instead.")]
   InvalidInnerAttribute,
+  #[error("#[webidl] can not be combined with other attributes")]
+  WebIdlCombined,
 }
 
 #[derive(Error, Debug)]
@@ -1194,6 +1200,10 @@ fn parse_attributes(
     }
   }
 
+  if attrs.len() > 1 && attrs.contains(&AttributeModifier::WebIdl) {
+    return Err(AttributeError::WebIdlCombined);
+  }
+
   if attrs.is_empty() {
     return Ok(Attributes::default());
   }
@@ -1252,6 +1262,7 @@ fn parse_attribute(
       (#[cppgc]) => Some(AttributeModifier::CppGcResource),
       (#[to_v8]) => Some(AttributeModifier::ToV8),
       (#[from_v8]) => Some(AttributeModifier::FromV8),
+      (#[webidl]) => Some(AttributeModifier::WebIdl),
       (#[required ($_attr:literal)]) => Some(AttributeModifier::Ignore),
       (#[rename ($_attr:literal)]) => Some(AttributeModifier::Ignore),
       (#[method ($_attr:literal)]) => Some(AttributeModifier::Ignore),
@@ -1555,6 +1566,15 @@ pub(crate) fn parse_type(
           primary.name(),
           "return value",
         ))
+      }
+      AttributeModifier::WebIdl if position == Position::RetVal => {
+        return Err(ArgError::InvalidAttributePosition(
+          primary.name(),
+          "argument",
+        ))
+      }
+      AttributeModifier::WebIdl => {
+        return Ok(Arg::WebIdl(stringify_token(ty)));
       }
       AttributeModifier::Serde
       | AttributeModifier::FromV8
@@ -2213,6 +2233,39 @@ mod tests {
     ),
     fn f(#[to_v8] s: Foo) {}
   );
+
+  expect_fail!(
+    op_with_webidl_ret,
+    RetError(super::RetError::InvalidType(InvalidAttributePosition(
+      "webidl", "argument"
+    ))),
+    #[webidl]
+    fn f() -> Foo {}
+  );
+
+  expect_fail!(
+    op_with_webidl_combined,
+    ArgError("x".into(), AttributeError(WebIdlCombined)),
+    fn f(
+      #[webidl]
+      #[string]
+      x: Foo,
+    ) {
+    }
+  );
+
+  #[test]
+  fn test_webidl_arg_keeps_generic_type() {
+    let ty: syn::Type = parse_str("Option<Vec<u8>>").unwrap();
+    let attrs = Attributes {
+      primary: Some(AttributeModifier::WebIdl),
+    };
+    let arg = parse_type(Position::Arg, attrs, &ty).unwrap();
+    let Arg::WebIdl(ty) = arg else {
+      panic!("expected Arg::WebIdl");
+    };
+    assert_eq!(ty.replace(' ', ""), "Option<Vec<u8>>");
+  }
 
   expect_fail!(
     op_with_from_v8_ret,

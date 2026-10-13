@@ -1,0 +1,304 @@
+impl<'a> deno_core::webidl::WebIdlConverter<'a> for Options<'a> {
+    type Options = ();
+    fn convert<C>(
+        scope: &mut deno_core::v8::HandleScope<'a>,
+        value: deno_core::v8::Local<'a, deno_core::v8::Value>,
+        prefix: ::std::borrow::Cow<'static, str>,
+        context: C,
+        options: &Self::Options,
+    ) -> ::std::result::Result<Self, deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        let _ = options;
+        let object = if value.is_null_or_undefined() {
+            ::std::option::Option::None
+        } else {
+            match deno_core::v8::Local::<deno_core::v8::Object>::try_from(value) {
+                ::std::result::Result::Ok(object) => ::std::option::Option::Some(object),
+                ::std::result::Result::Err(_) => {
+                    return ::std::result::Result::Err(
+                        deno_core::webidl::WebIdlError::new(
+                            prefix.clone(),
+                            || context(),
+                            ::std::format!(
+                                "can not be converted to '{}' because it is not an object",
+                                "Options",
+                            ),
+                        ),
+                    );
+                }
+            }
+        };
+        let _ = &object;
+        let __webidl_context_3 = || {
+            ::std::borrow::Cow::Owned(
+                ::std::format!(
+                    "{} for member '{}' of '{}'",
+                    context(),
+                    "label",
+                    "Options",
+                ),
+            )
+        };
+        let __webidl_value_3: deno_core::v8::Local<'a, deno_core::v8::Value> = match object {
+            ::std::option::Option::Some(object) => {
+                let key = deno_core::v8::String::new(scope, "label")
+                    .ok_or_else(|| {
+                        deno_core::webidl::WebIdlError::new(
+                            prefix.clone(),
+                            &__webidl_context_3,
+                            "threw an exception during conversion",
+                        )
+                    })?;
+                object
+                    .get(scope, key.into())
+                    .ok_or_else(|| {
+                        deno_core::webidl::WebIdlError::new(
+                            prefix.clone(),
+                            &__webidl_context_3,
+                            "threw an exception during conversion",
+                        )
+                    })?
+            }
+            ::std::option::Option::None => deno_core::v8::undefined(scope).into(),
+        };
+        let __webidl_member_3: String = if __webidl_value_3.is_undefined() {
+            return ::std::result::Result::Err(
+                deno_core::webidl::WebIdlError::new(
+                    prefix.clone(),
+                    || context(),
+                    "can not be converted to 'Options' because 'label' is required in 'Options'",
+                ),
+            )
+        } else {
+            <String as deno_core::webidl::WebIdlConverter<
+                'a,
+            >>::convert(
+                scope,
+                __webidl_value_3,
+                prefix.clone(),
+                &__webidl_context_3,
+                &{
+                    let mut __options: <String as deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::Options = ::std::default::Default::default();
+                    __options.treat_null_as_empty_string = true;
+                    __options
+                },
+            )?
+        };
+        let __webidl_context_2 = || {
+            ::std::borrow::Cow::Owned(
+                ::std::format!(
+                    "{} for member '{}' of '{}'",
+                    context(),
+                    "mode",
+                    "Options",
+                ),
+            )
+        };
+        let __webidl_value_2: deno_core::v8::Local<'a, deno_core::v8::Value> = match object {
+            ::std::option::Option::Some(object) => {
+                let key = deno_core::v8::String::new(scope, "mode")
+                    .ok_or_else(|| {
+                        deno_core::webidl::WebIdlError::new(
+                            prefix.clone(),
+                            &__webidl_context_2,
+                            "threw an exception during conversion",
+                        )
+                    })?;
+                object
+                    .get(scope, key.into())
+                    .ok_or_else(|| {
+                        deno_core::webidl::WebIdlError::new(
+                            prefix.clone(),
+                            &__webidl_context_2,
+                            "threw an exception during conversion",
+                        )
+                    })?
+            }
+            ::std::option::Option::None => deno_core::v8::undefined(scope).into(),
+        };
+        let __webidl_member_2: String = if __webidl_value_2.is_undefined() {
+            return ::std::result::Result::Err(
+                deno_core::webidl::WebIdlError::new(
+                    prefix.clone(),
+                    || context(),
+                    "can not be converted to 'Options' because 'mode' is required in 'Options'",
+                ),
+            )
+        } else {
+            <String as deno_core::webidl::WebIdlConverter<
+                'a,
+            >>::convert(
+                scope,
+                __webidl_value_2,
+                prefix.clone(),
+                &__webidl_context_2,
+                &::std::default::Default::default(),
+            )?
+        };
+        let __webidl_context_0 = || {
+            ::std::borrow::Cow::Owned(
+                ::std::format!(
+                    "{} for member '{}' of '{}'",
+                    context(),
+                    "retryCount",
+                    "Options",
+                ),
+            )
+        };
+        let __webidl_value_0: deno_core::v8::Local<'a, deno_core::v8::Value> = match object {
+            ::std::option::Option::Some(object) => {
+                let key = deno_core::v8::String::new(scope, "retryCount")
+                    .ok_or_else(|| {
+                        deno_core::webidl::WebIdlError::new(
+                            prefix.clone(),
+                            &__webidl_context_0,
+                            "threw an exception during conversion",
+                        )
+                    })?;
+                object
+                    .get(scope, key.into())
+                    .ok_or_else(|| {
+                        deno_core::webidl::WebIdlError::new(
+                            prefix.clone(),
+                            &__webidl_context_0,
+                            "threw an exception during conversion",
+                        )
+                    })?
+            }
+            ::std::option::Option::None => deno_core::v8::undefined(scope).into(),
+        };
+        let __webidl_member_0: u8 = if __webidl_value_0.is_undefined() {
+            1
+        } else {
+            <u8 as deno_core::webidl::WebIdlConverter<
+                'a,
+            >>::convert(
+                scope,
+                __webidl_value_0,
+                prefix.clone(),
+                &__webidl_context_0,
+                &::std::default::Default::default(),
+            )?
+        };
+        let __webidl_context_1 = || {
+            ::std::borrow::Cow::Owned(
+                ::std::format!(
+                    "{} for member '{}' of '{}'",
+                    context(),
+                    "timeout",
+                    "Options",
+                ),
+            )
+        };
+        let __webidl_value_1: deno_core::v8::Local<'a, deno_core::v8::Value> = match object {
+            ::std::option::Option::Some(object) => {
+                let key = deno_core::v8::String::new(scope, "timeout")
+                    .ok_or_else(|| {
+                        deno_core::webidl::WebIdlError::new(
+                            prefix.clone(),
+                            &__webidl_context_1,
+                            "threw an exception during conversion",
+                        )
+                    })?;
+                object
+                    .get(scope, key.into())
+                    .ok_or_else(|| {
+                        deno_core::webidl::WebIdlError::new(
+                            prefix.clone(),
+                            &__webidl_context_1,
+                            "threw an exception during conversion",
+                        )
+                    })?
+            }
+            ::std::option::Option::None => deno_core::v8::undefined(scope).into(),
+        };
+        let __webidl_member_1: Option<u8> = if __webidl_value_1.is_undefined() {
+            ::std::option::Option::None
+        } else {
+            <Option<
+                u8,
+            > as deno_core::webidl::WebIdlConverter<
+                'a,
+            >>::convert(
+                scope,
+                __webidl_value_1,
+                prefix.clone(),
+                &__webidl_context_1,
+                &{
+                    let mut __options: <Option<
+                        u8,
+                    > as deno_core::webidl::WebIdlConverter<'a>>::Options = ::std::default::Default::default();
+                    __options.clamp = true;
+                    __options
+                },
+            )?
+        };
+        let __webidl_context_4 = || {
+            ::std::borrow::Cow::Owned(
+                ::std::format!(
+                    "{} for member '{}' of '{}'",
+                    context(),
+                    "value",
+                    "Options",
+                ),
+            )
+        };
+        let __webidl_value_4: deno_core::v8::Local<'a, deno_core::v8::Value> = match object {
+            ::std::option::Option::Some(object) => {
+                let key = deno_core::v8::String::new(scope, "value")
+                    .ok_or_else(|| {
+                        deno_core::webidl::WebIdlError::new(
+                            prefix.clone(),
+                            &__webidl_context_4,
+                            "threw an exception during conversion",
+                        )
+                    })?;
+                object
+                    .get(scope, key.into())
+                    .ok_or_else(|| {
+                        deno_core::webidl::WebIdlError::new(
+                            prefix.clone(),
+                            &__webidl_context_4,
+                            "threw an exception during conversion",
+                        )
+                    })?
+            }
+            ::std::option::Option::None => deno_core::v8::undefined(scope).into(),
+        };
+        let __webidl_member_4: v8::Local<'a, v8::Value> = if __webidl_value_4
+            .is_undefined()
+        {
+            return ::std::result::Result::Err(
+                deno_core::webidl::WebIdlError::new(
+                    prefix.clone(),
+                    || context(),
+                    "can not be converted to 'Options' because 'value' is required in 'Options'",
+                ),
+            )
+        } else {
+            <v8::Local<
+                'a,
+                v8::Value,
+            > as deno_core::webidl::WebIdlConverter<
+                'a,
+            >>::convert(
+                scope,
+                __webidl_value_4,
+                prefix.clone(),
+                &__webidl_context_4,
+                &::std::default::Default::default(),
+            )?
+        };
+        ::std::result::Result::Ok(Self {
+            retry_count: __webidl_member_0,
+            timeout: __webidl_member_1,
+            kind: __webidl_member_2,
+            label: __webidl_member_3,
+            value: __webidl_member_4,
+        })
+    }
+}
