@@ -1,0 +1,225 @@
+impl<'a> deno_core::webidl::WebIdlConverter<'a> for Foo {
+    type Options = ();
+    #[allow(unused_variables)]
+    fn convert<C>(
+        scope: &mut deno_core::v8::HandleScope<'a>,
+        value: deno_core::v8::Local<'a, deno_core::v8::Value>,
+        prefix: std::borrow::Cow<'static, str>,
+        context: C,
+        _options: &Self::Options,
+    ) -> std::result::Result<Self, deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> std::borrow::Cow<'static, str>,
+    {
+        let __dictionary = deno_core::webidl::dictionary_object(
+            value,
+            &prefix,
+            &context,
+            "Foo",
+        )?;
+        let __webidl_qux = match deno_core::webidl::dictionary_member(
+            scope,
+            __dictionary,
+            "baz",
+            &prefix,
+            &context,
+        )? {
+            Some(__value) => {
+                let __member_context = || {
+                    std::borrow::Cow::Owned(
+                        format!("'{}' of '{}' ({})", "baz", "Foo", context()),
+                    )
+                };
+                <bool as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    __value,
+                    prefix.clone(),
+                    &__member_context,
+                    &Default::default(),
+                )?
+            }
+            None => {
+                return Err(
+                    deno_core::webidl::missing_dictionary_member(
+                        &prefix,
+                        &context,
+                        "Foo",
+                        "baz",
+                    ),
+                );
+            }
+        };
+        let __webidl_foo_bar = match deno_core::webidl::dictionary_member(
+            scope,
+            __dictionary,
+            "fooBar",
+            &prefix,
+            &context,
+        )? {
+            Some(__value) => {
+                let __member_context = || {
+                    std::borrow::Cow::Owned(
+                        format!("'{}' of '{}' ({})", "fooBar", "Foo", context()),
+                    )
+                };
+                <u32 as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    __value,
+                    prefix.clone(),
+                    &__member_context,
+                    &Default::default(),
+                )?
+            }
+            None => {
+                return Err(
+                    deno_core::webidl::missing_dictionary_member(
+                        &prefix,
+                        &context,
+                        "Foo",
+                        "fooBar",
+                    ),
+                );
+            }
+        };
+        let __webidl_maybe = match deno_core::webidl::dictionary_member(
+            scope,
+            __dictionary,
+            "maybe",
+            &prefix,
+            &context,
+        )? {
+            Some(__value) => {
+                let __member_context = || {
+                    std::borrow::Cow::Owned(
+                        format!("'{}' of '{}' ({})", "maybe", "Foo", context()),
+                    )
+                };
+                <Option<
+                    String,
+                > as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    __value,
+                    prefix.clone(),
+                    &__member_context,
+                    &Default::default(),
+                )?
+            }
+            None => None,
+        };
+        let __webidl_must = match deno_core::webidl::dictionary_member(
+            scope,
+            __dictionary,
+            "must",
+            &prefix,
+            &context,
+        )? {
+            Some(__value) => {
+                let __member_context = || {
+                    std::borrow::Cow::Owned(
+                        format!("'{}' of '{}' ({})", "must", "Foo", context()),
+                    )
+                };
+                <Option<
+                    String,
+                > as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    __value,
+                    prefix.clone(),
+                    &__member_context,
+                    &Default::default(),
+                )?
+            }
+            None => {
+                return Err(
+                    deno_core::webidl::missing_dictionary_member(
+                        &prefix,
+                        &context,
+                        "Foo",
+                        "must",
+                    ),
+                );
+            }
+        };
+        let __webidl_type = match deno_core::webidl::dictionary_member(
+            scope,
+            __dictionary,
+            "type",
+            &prefix,
+            &context,
+        )? {
+            Some(__value) => {
+                let __member_context = || {
+                    std::borrow::Cow::Owned(
+                        format!("'{}' of '{}' ({})", "type", "Foo", context()),
+                    )
+                };
+                <bool as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    __value,
+                    prefix.clone(),
+                    &__member_context,
+                    &Default::default(),
+                )?
+            }
+            None => {
+                return Err(
+                    deno_core::webidl::missing_dictionary_member(
+                        &prefix,
+                        &context,
+                        "Foo",
+                        "type",
+                    ),
+                );
+            }
+        };
+        let __webidl_with_default = match deno_core::webidl::dictionary_member(
+            scope,
+            __dictionary,
+            "withDefault",
+            &prefix,
+            &context,
+        )? {
+            Some(__value) => {
+                let __member_context = || {
+                    std::borrow::Cow::Owned(
+                        format!("'{}' of '{}' ({})", "withDefault", "Foo", context()),
+                    )
+                };
+                <u8 as deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    __value,
+                    prefix.clone(),
+                    &__member_context,
+                    &{
+                        let mut __options: <u8 as deno_core::webidl::WebIdlConverter<
+                            'a,
+                        >>::Options = Default::default();
+                        __options.clamp = true;
+                        __options
+                    },
+                )?
+            }
+            None => 5,
+        };
+        Ok(Self {
+            qux: __webidl_qux,
+            foo_bar: __webidl_foo_bar,
+            maybe: __webidl_maybe,
+            must: __webidl_must,
+            r#type: __webidl_type,
+            with_default: __webidl_with_default,
+        })
+    }
+}

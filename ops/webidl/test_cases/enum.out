@@ -1,0 +1,38 @@
+impl<'a> deno_core::webidl::WebIdlConverter<'a> for Mode {
+    type Options = ();
+    fn convert<C>(
+        scope: &mut deno_core::v8::HandleScope<'a>,
+        value: deno_core::v8::Local<'a, deno_core::v8::Value>,
+        prefix: std::borrow::Cow<'static, str>,
+        context: C,
+        _options: &Self::Options,
+    ) -> std::result::Result<Self, deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> std::borrow::Cow<'static, str>,
+    {
+        let __value = <String as deno_core::webidl::WebIdlConverter<
+            'a,
+        >>::convert(scope, value, prefix.clone(), &context, &Default::default())?;
+        match __value.as_str() {
+            "foo-bar" => Ok(Self::FooBar),
+            "custom" => Ok(Self::Other),
+            _ => {
+                Err(
+                    deno_core::webidl::WebIdlError::new(
+                        prefix,
+                        context(),
+                        deno_core::webidl::WebIdlErrorKind::Other(
+                            std::borrow::Cow::Owned(
+                                format!(
+                                    "can not be converted to '{}' because '{}' is not a valid value",
+                                    "Mode",
+                                    __value,
+                                ),
+                            ),
+                        ),
+                    ),
+                )
+            }
+        }
+    }
+}

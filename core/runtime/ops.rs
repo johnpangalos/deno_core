@@ -551,6 +551,7 @@ mod tests {
   use crate::OpState;
   use crate::RuntimeOptions;
   use crate::ToV8;
+  use crate::WebIDL;
   use anyhow::bail;
   use anyhow::Error;
   use bytes::BytesMut;
@@ -664,6 +665,14 @@ mod tests {
       op_smi_to_from_v8,
       op_number_to_from_v8,
       op_bool_to_from_v8,
+
+      op_test_webidl_dict,
+      op_test_webidl_order,
+      op_test_webidl_enum,
+      op_test_webidl_int,
+      op_test_webidl_second,
+      op_test_webidl_raw,
+      op_test_webidl_async,
     ],
     state = |state| {
       state.put(1234u32);
@@ -2500,6 +2509,193 @@ mod tests {
       err.to_string(),
       "TypeError: Expected boolean\n    at <anonymous>:4:7"
     );
+    Ok(())
+  }
+
+  #[derive(WebIDL, Debug)]
+  #[webidl(dictionary)]
+  pub struct TestDict {
+    pub foo_bar: u32,
+    #[webidl(default = true)]
+    pub qux: bool,
+    #[webidl(required)]
+    pub must: Option<String>,
+  }
+
+  #[derive(WebIDL, Debug)]
+  #[webidl(dictionary)]
+  pub struct OrderDict {
+    pub zed: bool,
+    pub alpha: bool,
+  }
+
+  #[derive(WebIDL, Debug)]
+  #[webidl(enum)]
+  pub enum TestMode {
+    FooBar,
+    #[webidl(rename = "custom")]
+    Other,
+  }
+
+  #[op2]
+  #[string]
+  pub fn op_test_webidl_dict(#[webidl] dict: TestDict) -> String {
+    format!(
+      "{}|{}|{}",
+      dict.foo_bar,
+      dict.qux,
+      dict.must.unwrap_or_default()
+    )
+  }
+
+  #[op2]
+  pub fn op_test_webidl_order(#[webidl] dict: OrderDict) -> bool {
+    dict.zed && dict.alpha
+  }
+
+  #[op2]
+  #[string]
+  pub fn op_test_webidl_enum(#[webidl] mode: TestMode) -> String {
+    format!("{mode:?}")
+  }
+
+  #[op2]
+  pub fn op_test_webidl_int(#[webidl] n: u8) -> u8 {
+    n
+  }
+
+  #[op2]
+  pub fn op_test_webidl_second(a: u32, #[webidl] b: u8) -> u32 {
+    a + b as u32
+  }
+
+  #[derive(WebIDL, Debug)]
+  #[webidl(dictionary)]
+  pub struct RawDict {
+    pub r#type: bool,
+  }
+
+  #[op2]
+  pub fn op_test_webidl_raw(#[webidl] dict: RawDict) -> bool {
+    dict.r#type
+  }
+
+  #[op2(async)]
+  pub async fn op_test_webidl_async(#[webidl] n: u8) -> u8 {
+    n
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_test_webidl_dict",
+      "assert(op_test_webidl_dict({fooBar: 7, must: 'x'}) === '7|true|x')",
+    )?;
+    run_test2(
+      JIT_ITERATIONS,
+      "op_test_webidl_dict",
+      "assert(op_test_webidl_dict({fooBar: 7, qux: false, must: null}) === '7|false|')",
+    )?;
+    run_test2(
+      1,
+      "op_test_webidl_dict",
+      r#"
+      let e;
+      try { op_test_webidl_dict({fooBar: 7}) } catch (err) { e = err }
+      assert(e instanceof TypeError);
+      assert(e.message === "Failed to execute 'op_test_webidl_dict': Argument 1 can not be converted to 'TestDict' because 'must' is required in 'TestDict'");
+      assert(op_test_webidl_dict({fooBar: 1, must: 'y'}) === '1|true|y');
+      "#,
+    )?;
+    run_test2(
+      1,
+      "op_test_webidl_dict",
+      r#"
+      let e;
+      try { op_test_webidl_dict(5) } catch (err) { e = err }
+      assert(e instanceof TypeError);
+      assert(e.message === "Failed to execute 'op_test_webidl_dict': Argument 1 can not be converted to 'TestDict' because it is not an object");
+      "#,
+    )?;
+    run_test2(
+      JIT_ITERATIONS,
+      "op_test_webidl_order",
+      r#"
+      const log = [];
+      assert(op_test_webidl_order({
+        get zed() { log.push('zed'); return true },
+        get alpha() { log.push('alpha'); return true },
+      }));
+      assert(log.join(',') === 'alpha,zed');
+      "#,
+    )?;
+    run_test2(
+      JIT_ITERATIONS,
+      "op_test_webidl_enum",
+      "assert(op_test_webidl_enum('foo-bar') === 'FooBar' && op_test_webidl_enum({ toString() { return 'custom' } }) === 'Other')",
+    )?;
+    run_test2(
+      1,
+      "op_test_webidl_enum",
+      r#"
+      let e;
+      try { op_test_webidl_enum('FooBar') } catch (err) { e = err }
+      assert(e instanceof TypeError);
+      assert(e.message === "Failed to execute 'op_test_webidl_enum': Argument 1 can not be converted to 'TestMode' because 'FooBar' is not a valid value");
+      "#,
+    )?;
+    run_test2(
+      1,
+      "op_test_webidl_int",
+      r#"
+      let e;
+      try { op_test_webidl_int(Symbol()) } catch (err) { e = err }
+      assert(e instanceof TypeError);
+      assert(e.message === "Failed to execute 'op_test_webidl_int': Argument 1 threw an exception: TypeError: Cannot convert a Symbol value to a number");
+      assert(op_test_webidl_int('12') === 12);
+      "#,
+    )?;
+    run_test2(
+      1,
+      "op_test_webidl_second",
+      r#"
+      let e;
+      try { op_test_webidl_second(1, Symbol()) } catch (err) { e = err }
+      assert(e instanceof TypeError);
+      assert(e.message.startsWith("Failed to execute 'op_test_webidl_second': Argument 2 threw an exception"));
+      assert(op_test_webidl_second(1, '2') === 3);
+      "#,
+    )?;
+    run_test2(
+      1,
+      "op_test_webidl_raw",
+      r#"
+      assert(op_test_webidl_raw({type: true}) === true);
+      let e;
+      try { op_test_webidl_raw({rType: true}) } catch (err) { e = err }
+      assert(e instanceof TypeError);
+      assert(e.message === "Failed to execute 'op_test_webidl_raw': Argument 1 can not be converted to 'RawDict' because 'type' is required in 'RawDict'");
+      assert(op_test_webidl_raw({type: false}) === false);
+      "#,
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_async() -> Result<(), Box<dyn std::error::Error>>
+  {
+    run_async_test(
+      1,
+      "op_test_webidl_async",
+      r#"
+      let e;
+      try { await op_test_webidl_async(Symbol()) } catch (err) { e = err }
+      assert(e instanceof TypeError);
+      assert(e.message === "Failed to execute 'op_test_webidl_async': Argument 1 threw an exception: TypeError: Cannot convert a Symbol value to a number");
+      assert(await op_test_webidl_async('3') === 3);"#,
+    )
+    .await?;
     Ok(())
   }
 }

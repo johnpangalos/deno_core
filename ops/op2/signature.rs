@@ -277,6 +277,7 @@ pub enum Arg {
   CppGcResource(String),
   OptionCppGcResource(String),
   FromV8(String),
+  WebIdl(String),
   ToV8(String),
   VarArgs,
 }
@@ -740,6 +741,8 @@ pub enum AttributeModifier {
   ToV8,
   /// #[from_v8] for types that impl `FromV8`
   FromV8,
+  /// #[webidl] for types that impl `WebIdlConverter`
+  WebIdl,
   /// #[smi], for non-integral ID types representing small integers (-2³¹ and 2³¹-1 on 64-bit platforms,
   /// see https://medium.com/fhinkel/v8-internals-how-small-is-a-small-integer-e0badc18b6da).
   Smi,
@@ -768,6 +771,7 @@ impl AttributeModifier {
     match self {
       AttributeModifier::ToV8 => "to_v8",
       AttributeModifier::FromV8 => "from_v8",
+      AttributeModifier::WebIdl => "webidl",
       AttributeModifier::Bigint => "bigint",
       AttributeModifier::Number => "number",
       AttributeModifier::Buffer(..) => "buffer",
@@ -1252,6 +1256,7 @@ fn parse_attribute(
       (#[cppgc]) => Some(AttributeModifier::CppGcResource),
       (#[to_v8]) => Some(AttributeModifier::ToV8),
       (#[from_v8]) => Some(AttributeModifier::FromV8),
+      (#[webidl]) => Some(AttributeModifier::WebIdl),
       (#[required ($_attr:literal)]) => Some(AttributeModifier::Ignore),
       (#[rename ($_attr:literal)]) => Some(AttributeModifier::Ignore),
       (#[method ($_attr:literal)]) => Some(AttributeModifier::Ignore),
@@ -1549,6 +1554,15 @@ pub(crate) fn parse_type(
           primary.name(),
           "argument",
         ))
+      }
+      AttributeModifier::WebIdl if position == Position::RetVal => {
+        return Err(ArgError::InvalidAttributePosition(
+          primary.name(),
+          "argument",
+        ))
+      }
+      AttributeModifier::WebIdl => {
+        return Ok(Arg::WebIdl(stringify_token(ty)));
       }
       AttributeModifier::ToV8 if position == Position::Arg => {
         return Err(ArgError::InvalidAttributePosition(
@@ -1904,6 +1918,14 @@ mod tests {
     (SerdeV8((A, B))) -> Infallible(SerdeV8((A, B)))
   );
   test!(
+    fn op_webidl(#[webidl] input: package::WebIdlInput);
+    (WebIdl(package::WebIdlInput)) -> Infallible(Void)
+  );
+  test!(
+    fn op_webidl_second(state: &mut OpState, #[webidl] input: Option<Vec<u32>>);
+    (Ref(Mut, OpState), WebIdl(Option::<Vec::<u32>>)) -> Infallible(Void)
+  );
+  test!(
     fn op_local(input: v8::Local<v8::String>) -> Result<v8::Local<v8::String>, Error>;
     (V8Local(String)) -> Result(V8Local(String))
   );
@@ -2212,6 +2234,15 @@ mod tests {
       InvalidAttributePosition("to_v8", "return value")
     ),
     fn f(#[to_v8] s: Foo) {}
+  );
+
+  expect_fail!(
+    op_with_webidl_ret,
+    RetError(super::RetError::InvalidType(InvalidAttributePosition(
+      "webidl", "argument"
+    ))),
+    #[webidl]
+    fn f() -> String {}
   );
 
   expect_fail!(
