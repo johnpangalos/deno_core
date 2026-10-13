@@ -551,6 +551,7 @@ mod tests {
   use crate::OpState;
   use crate::RuntimeOptions;
   use crate::ToV8;
+  use crate::WebIDL;
   use anyhow::bail;
   use anyhow::Error;
   use bytes::BytesMut;
@@ -578,6 +579,8 @@ mod tests {
       op_test_add,
       op_test_add_smi_unsigned,
       op_test_add_option,
+      op_test_webidl_dictionary,
+      op_test_webidl_u8,
       op_test_result_void_switch,
       op_test_result_void_ok,
       op_test_result_void_err,
@@ -829,6 +832,105 @@ mod tests {
       JIT_ITERATIONS,
       "op_test_add",
       "assert(op_test_add(8192n, -4096n) == 4096)",
+    )?;
+    Ok(())
+  }
+
+  #[derive(WebIDL, Debug)]
+  #[webidl(dictionary)]
+  pub struct TestDictionary {
+    foo_bar: u8,
+    #[webidl(default = 2)]
+    #[options(clamp = true)]
+    clamped: u8,
+  }
+
+  #[op2]
+  pub fn op_test_webidl_dictionary(#[webidl] dict: TestDictionary) -> u32 {
+    dict.foo_bar as u32 + dict.clamped as u32
+  }
+
+  #[op2]
+  pub fn op_test_webidl_u8(#[webidl] value: u8) -> u8 {
+    value
+  }
+
+  /// JS that calls `call` and checks it throws a `TypeError` with `message`.
+  fn throws_type_error(call: &str, message: &str) -> String {
+    format!(
+      "let threw = false;
+      try {{ {call}; }} catch (e) {{
+        threw = true;
+        if (e.message !== {message:?}) log(e.message);
+        assert(e instanceof TypeError && e.message === {message:?});
+      }}
+      assert(threw);"
+    )
+  }
+
+  /// Test `#[webidl]` arguments: converted values, and a `TypeError` whose
+  /// message names the op and the argument for invalid values.
+  #[tokio::test(flavor = "current_thread")]
+  pub async fn test_op_webidl() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      JIT_ITERATIONS,
+      "op_test_webidl_dictionary",
+      "assert(op_test_webidl_dictionary({ fooBar: 1 }) == 3)",
+    )?;
+    run_test2(
+      JIT_ITERATIONS,
+      "op_test_webidl_dictionary",
+      "assert(op_test_webidl_dictionary({ fooBar: 1, clamped: 300 }) == 256)",
+    )?;
+    run_test2(
+      JIT_ITERATIONS,
+      "op_test_webidl_dictionary",
+      "assert(op_test_webidl_dictionary(Object.create({ fooBar: 4 })) == 6)",
+    )?;
+    run_test2(
+      JIT_ITERATIONS,
+      "op_test_webidl_u8",
+      "assert(op_test_webidl_u8(300) == 44 && op_test_webidl_u8('12') == 12)",
+    )?;
+    run_test2(
+      JIT_SLOW_ITERATIONS,
+      "op_test_webidl_dictionary",
+      &throws_type_error(
+        "op_test_webidl_dictionary({})",
+        "Failed to execute 'op_test_webidl_dictionary': Argument 1 can not be converted to 'TestDictionary' because 'fooBar' is required in 'TestDictionary'",
+      ),
+    )?;
+    run_test2(
+      JIT_SLOW_ITERATIONS,
+      "op_test_webidl_dictionary",
+      &throws_type_error(
+        "op_test_webidl_dictionary(1)",
+        "Failed to execute 'op_test_webidl_dictionary': Argument 1 is not an object",
+      ),
+    )?;
+    run_test2(
+      JIT_SLOW_ITERATIONS,
+      "op_test_webidl_dictionary",
+      &throws_type_error(
+        "op_test_webidl_dictionary({ fooBar: Symbol() })",
+        "Failed to execute 'op_test_webidl_dictionary': 'fooBar' of 'TestDictionary' (Argument 1) is a Symbol and can not be converted to a number",
+      ),
+    )?;
+    run_test2(
+      JIT_SLOW_ITERATIONS,
+      "op_test_webidl_u8",
+      &throws_type_error(
+        "op_test_webidl_u8(Symbol())",
+        "Failed to execute 'op_test_webidl_u8': Argument 1 is a Symbol and can not be converted to a number",
+      ),
+    )?;
+    run_test2(
+      JIT_SLOW_ITERATIONS,
+      "op_test_webidl_u8",
+      &throws_type_error(
+        "op_test_webidl_u8({ valueOf() { throw new Error('boom') } })",
+        "Failed to execute 'op_test_webidl_u8': Argument 1 threw an exception: Error: boom",
+      ),
     )?;
     Ok(())
   }

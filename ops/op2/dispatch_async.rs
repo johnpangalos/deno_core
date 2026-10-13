@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 use super::config::MacroConfig;
 use super::dispatch_slow::generate_dispatch_slow_call;
+use super::dispatch_slow::js_op_name;
 use super::dispatch_slow::return_value_infallible;
 use super::dispatch_slow::return_value_result;
 use super::dispatch_slow::return_value_v8_value;
@@ -55,7 +56,9 @@ pub(crate) fn generate_dispatch_async(
   };
 
   // input_index = 1 as promise ID is the first arg
-  let args = generate_dispatch_slow_call(generator_state, signature, 1)?;
+  let op_name = js_op_name(config, generator_state);
+  let args =
+    generate_dispatch_slow_call(generator_state, signature, 1, &op_name)?;
 
   // Always need context and args
   generator_state.needs_opctx = true;

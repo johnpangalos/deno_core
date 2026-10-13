@@ -29,19 +29,41 @@ use quote::format_ident;
 use quote::quote;
 use syn::Type;
 
+/// The name an op is called by from JavaScript, used in error messages.
+pub(crate) fn js_op_name(
+  config: &MacroConfig,
+  generator_state: &GeneratorState,
+) -> String {
+  config
+    .rename
+    .clone()
+    .unwrap_or_else(|| generator_state.op_name.to_string())
+}
+
 pub(crate) fn generate_dispatch_slow_call(
   generator_state: &mut GeneratorState,
   signature: &ParsedSignature,
   mut input_index: usize,
+  op_name: &str,
 ) -> Result<TokenStream, V8SignatureMappingError> {
   // Collect virtual arguments in a deferred list that we compute at the very end. This allows us to borrow
   // the scope/opstate in the intermediate stages.
   let mut args = TokenStream::new();
   let mut deferred = TokenStream::new();
+  // The first JS-visible argument, so that argument numbers in errors start at 1.
+  let first_input = input_index;
 
   for (index, arg) in signature.args.iter().enumerate() {
-    let arg_mapped = from_arg(generator_state, index, arg, &signature.ret_val)
-      .map_err(|s| V8SignatureMappingError::NoArgMapping(s, arg.clone()))?;
+    let arg_number = input_index - first_input + 1;
+    let arg_mapped = from_arg(
+      generator_state,
+      index,
+      arg,
+      &signature.ret_val,
+      arg_number,
+      op_name,
+    )
+    .map_err(|s| V8SignatureMappingError::NoArgMapping(s, arg.clone()))?;
     if arg.is_virtual() {
       deferred.extend(arg_mapped);
     } else {
@@ -63,7 +85,9 @@ pub(crate) fn generate_dispatch_slow(
 ) -> Result<TokenStream, V8SignatureMappingError> {
   let mut output = TokenStream::new();
 
-  let args = generate_dispatch_slow_call(generator_state, signature, 0)?;
+  let op_name = js_op_name(config, generator_state);
+  let args =
+    generate_dispatch_slow_call(generator_state, signature, 0, &op_name)?;
 
   output.extend(gs_quote!(generator_state(result) => (let #result = {
     #args
@@ -357,6 +381,8 @@ pub fn from_arg(
   index: usize,
   arg: &Arg,
   ret_val: &RetVal,
+  arg_number: usize,
+  op_name: &str,
 ) -> Result<TokenStream, V8MappingError> {
   let GeneratorState {
     args,
@@ -413,6 +439,8 @@ pub fn from_arg(
         index,
         &Arg::Numeric(*numeric, *flag),
         ret_val,
+        arg_number,
+        op_name,
       )?;
       quote! {
         let #arg_ident = if #arg_ident.is_null_or_undefined() {
@@ -639,6 +667,30 @@ pub fn from_arg(
       let throw_exception = throw_type_error_string(generator_state, &err)?;
       quote! {
         let #arg_ident = match <#ty as deno_core::FromV8>::from_v8(&mut #scope, #arg_ident) {
+          Ok(t) => t,
+          Err(#err) => {
+            #throw_exception;
+          }
+        };
+      }
+    }
+    Arg::WebIdl(ty) => {
+      *needs_scope = true;
+      let ty =
+        syn::parse_str::<syn::Type>(ty).expect("Failed to reparse webidl type");
+      let scope = scope.clone();
+      let err = format_ident!("{}_err", arg_ident);
+      let throw_exception = throw_type_error_string(generator_state, &err)?;
+      let prefix = format!("Failed to execute '{op_name}'");
+      let context = format!("Argument {arg_number}");
+      quote! {
+        let #arg_ident = match <#ty as deno_core::webidl::WebIdlConverter<'_>>::convert(
+          &mut #scope,
+          #arg_ident,
+          ::std::borrow::Cow::Borrowed(#prefix),
+          || ::std::borrow::Cow::Borrowed(#context),
+          &::std::default::Default::default(),
+        ) {
           Ok(t) => t,
           Err(#err) => {
             #throw_exception;

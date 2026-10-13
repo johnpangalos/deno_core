@@ -589,6 +589,20 @@ any
 <td>
 
 ```text
+#[webidl] T
+```
+
+</td><td>
+
+</td><td>
+any
+</td><td>
+Converted with `T`'s `WebIdlConverter` and default options. A failure throws a `TypeError` naming the op, and the op body does not run. Not available for fast calls.
+</td></tr>
+<tr>
+<td>
+
+```text
 #[arraybuffer] &mut [u8]
 ```
 

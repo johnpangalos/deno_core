@@ -1,0 +1,177 @@
+impl<'a> ::deno_core::webidl::WebIdlConverter<'a> for Dictionary {
+    type Options = ();
+    fn convert<C>(
+        scope: &mut ::deno_core::v8::HandleScope<'a>,
+        value: ::deno_core::v8::Local<'a, ::deno_core::v8::Value>,
+        prefix: ::std::borrow::Cow<'static, str>,
+        context: C,
+        _options: &Self::Options,
+    ) -> ::std::result::Result<Self, ::deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        let object = ::deno_core::webidl::dictionary_object(value, &prefix, &context)?;
+        let __member_1: u8 = match ::deno_core::webidl::dictionary_member(
+            scope,
+            object,
+            "count",
+            "Dictionary",
+            &prefix,
+            &context,
+        )? {
+            ::std::option::Option::Some(value) => {
+                <u8 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    value,
+                    prefix.clone(),
+                    || ::std::borrow::Cow::Owned(
+                        ::deno_core::webidl::dictionary_member_context(
+                            "count",
+                            "Dictionary",
+                            &context(),
+                        ),
+                    ),
+                    &{
+                        let mut options = <u8 as ::deno_core::webidl::WebIdlConverter<
+                            'a,
+                        >>::Options::default();
+                        options.clamp = true;
+                        options
+                    },
+                )?
+            }
+            ::std::option::Option::None => 3,
+        };
+        let __member_0: u8 = match ::deno_core::webidl::dictionary_member(
+            scope,
+            object,
+            "fooBar",
+            "Dictionary",
+            &prefix,
+            &context,
+        )? {
+            ::std::option::Option::Some(value) => {
+                <u8 as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    value,
+                    prefix.clone(),
+                    || ::std::borrow::Cow::Owned(
+                        ::deno_core::webidl::dictionary_member_context(
+                            "fooBar",
+                            "Dictionary",
+                            &context(),
+                        ),
+                    ),
+                    &::std::default::Default::default(),
+                )?
+            }
+            ::std::option::Option::None => {
+                return ::std::result::Result::Err(
+                    ::deno_core::webidl::WebIdlError::new(
+                        prefix.clone(),
+                        &context(),
+                        ::deno_core::webidl::WebIdlErrorKind::Required {
+                            dictionary: "Dictionary",
+                            key: "fooBar".to_string(),
+                        },
+                    ),
+                );
+            }
+        };
+        let __member_2: Option<String> = match ::deno_core::webidl::dictionary_member(
+            scope,
+            object,
+            "maybe",
+            "Dictionary",
+            &prefix,
+            &context,
+        )? {
+            ::std::option::Option::Some(value) => {
+                <Option<
+                    String,
+                > as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    value,
+                    prefix.clone(),
+                    || ::std::borrow::Cow::Owned(
+                        ::deno_core::webidl::dictionary_member_context(
+                            "maybe",
+                            "Dictionary",
+                            &context(),
+                        ),
+                    ),
+                    &::std::default::Default::default(),
+                )?
+            }
+            ::std::option::Option::None => ::std::option::Option::None,
+        };
+        let __member_3: String = match ::deno_core::webidl::dictionary_member(
+            scope,
+            object,
+            "renamed",
+            "Dictionary",
+            &prefix,
+            &context,
+        )? {
+            ::std::option::Option::Some(value) => {
+                <String as ::deno_core::webidl::WebIdlConverter<
+                    'a,
+                >>::convert(
+                    scope,
+                    value,
+                    prefix.clone(),
+                    || ::std::borrow::Cow::Owned(
+                        ::deno_core::webidl::dictionary_member_context(
+                            "renamed",
+                            "Dictionary",
+                            &context(),
+                        ),
+                    ),
+                    &::std::default::Default::default(),
+                )?
+            }
+            ::std::option::Option::None => {
+                return ::std::result::Result::Err(
+                    ::deno_core::webidl::WebIdlError::new(
+                        prefix.clone(),
+                        &context(),
+                        ::deno_core::webidl::WebIdlErrorKind::Required {
+                            dictionary: "Dictionary",
+                            key: "renamed".to_string(),
+                        },
+                    ),
+                );
+            }
+        };
+        ::std::result::Result::Ok(Self {
+            foo_bar: __member_0,
+            count: __member_1,
+            maybe: __member_2,
+            other: __member_3,
+        })
+    }
+}
+
+impl<'a> ::deno_core::webidl::WebIdlConverter<'a> for Empty {
+    type Options = ();
+    fn convert<C>(
+        scope: &mut ::deno_core::v8::HandleScope<'a>,
+        value: ::deno_core::v8::Local<'a, ::deno_core::v8::Value>,
+        prefix: ::std::borrow::Cow<'static, str>,
+        context: C,
+        _options: &Self::Options,
+    ) -> ::std::result::Result<Self, ::deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        let _ = scope;
+        ::deno_core::webidl::dictionary_object(value, &prefix, &context)?;
+        ::std::result::Result::Ok(Self {})
+    }
+}

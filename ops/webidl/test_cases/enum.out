@@ -1,0 +1,34 @@
+impl<'a> ::deno_core::webidl::WebIdlConverter<'a> for Mode {
+    type Options = ();
+    fn convert<C>(
+        scope: &mut ::deno_core::v8::HandleScope<'a>,
+        value: ::deno_core::v8::Local<'a, ::deno_core::v8::Value>,
+        prefix: ::std::borrow::Cow<'static, str>,
+        context: C,
+        _options: &Self::Options,
+    ) -> ::std::result::Result<Self, ::deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        let received = ::deno_core::webidl::enum_string(
+            scope,
+            value,
+            &prefix,
+            &context,
+        )?;
+        let variant = match received.as_str() {
+            "foo-bar" => ::std::option::Option::Some(Self::FooBar),
+            "HTTP" => ::std::option::Option::Some(Self::Http2Request),
+            _ => ::std::option::Option::None,
+        };
+        variant
+            .ok_or_else(|| ::deno_core::webidl::WebIdlError::new(
+                prefix.clone(),
+                &context(),
+                ::deno_core::webidl::WebIdlErrorKind::InvalidEnumValue {
+                    value: received,
+                    enum_name: "Mode",
+                },
+            ))
+    }
+}
