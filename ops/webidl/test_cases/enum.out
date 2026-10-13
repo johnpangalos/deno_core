@@ -1,0 +1,39 @@
+impl<'a> ::deno_core::webidl::WebIdlConverter<'a> for Choice {
+    type Options = ();
+    fn convert<C>(
+        __scope: &mut ::deno_core::v8::HandleScope<'a>,
+        __value: ::deno_core::v8::Local<'a, ::deno_core::v8::Value>,
+        __prefix: ::std::borrow::Cow<'static, str>,
+        __context: C,
+        _options: &Self::Options,
+    ) -> ::std::result::Result<Self, ::deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        let __string = <::std::string::String as ::deno_core::webidl::WebIdlConverter<
+            'a,
+        >>::convert(
+            __scope,
+            __value,
+            __prefix.clone(),
+            &__context,
+            &::std::default::Default::default(),
+        )?;
+        match __string.as_str() {
+            "foo-bar" => ::std::result::Result::Ok(Self::FooBar),
+            "custom-name" => ::std::result::Result::Ok(Self::Other),
+            _ => {
+                ::std::result::Result::Err(
+                    ::deno_core::webidl::WebIdlError::new(
+                        __prefix,
+                        &__context,
+                        ::deno_core::webidl::WebIdlErrorKind::InvalidEnumVariant {
+                            converter: "Choice",
+                            variant: __string,
+                        },
+                    ),
+                )
+            }
+        }
+    }
+}

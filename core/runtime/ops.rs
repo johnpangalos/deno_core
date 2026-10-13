@@ -551,6 +551,7 @@ mod tests {
   use crate::OpState;
   use crate::RuntimeOptions;
   use crate::ToV8;
+  use crate::WebIDL;
   use anyhow::bail;
   use anyhow::Error;
   use bytes::BytesMut;
@@ -609,6 +610,9 @@ mod tests {
       op_test_v8_type_handle_scope_result,
       op_test_v8_global,
       op_test_serde_v8,
+      op_webidl_args,
+      op_webidl_dict,
+      op_webidl_async,
       op_jsruntimestate,
       op_state_rc,
       op_state_ref,
@@ -1414,6 +1418,115 @@ mod tests {
       "op_test_serde_v8",
       "try { op_test_serde_v8({}); assert(false) } catch (e) { assertErrorContains(e, 'missing field') }",
     )?;
+    Ok(())
+  }
+
+  #[op2]
+  #[string]
+  pub fn op_webidl_args(#[webidl] a: u8, #[webidl] b: String) -> String {
+    format!("{a}|{b}")
+  }
+
+  #[derive(WebIDL)]
+  #[webidl(dictionary)]
+  pub struct TestDict {
+    #[webidl(required)]
+    name: String,
+    #[webidl(default = 1)]
+    count: u32,
+    kind: Option<TestEnum>,
+  }
+
+  #[derive(WebIDL)]
+  #[webidl(enum)]
+  pub enum TestEnum {
+    FooBar,
+    #[webidl(rename = "baz")]
+    Qux,
+  }
+
+  #[op2]
+  #[string]
+  pub fn op_webidl_dict(#[webidl] dict: TestDict) -> String {
+    let kind = match dict.kind {
+      Some(TestEnum::FooBar) => "FooBar",
+      Some(TestEnum::Qux) => "Qux",
+      None => "none",
+    };
+    format!("{}|{}|{kind}", dict.name, dict.count)
+  }
+
+  #[op2(async)]
+  #[string]
+  pub async fn op_webidl_async(#[webidl] s: String) -> String {
+    s
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_args() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      1,
+      "op_webidl_args",
+      "assert(op_webidl_args(300, 5) == '44|5')",
+    )?;
+    run_test2(
+      1,
+      "op_webidl_args",
+      "assert(op_webidl_args() == '0|undefined')",
+    )?;
+    run_test2(
+      1,
+      "op_webidl_args",
+      "try { op_webidl_args(1, Symbol()); assert(false) } catch (e) { assert(e instanceof TypeError); assert(e.message.startsWith(\"Failed to execute 'op_webidl_args': Argument 2\")) }",
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test]
+  pub async fn test_op_webidl_dict() -> Result<(), Box<dyn std::error::Error>> {
+    run_test2(
+      1,
+      "op_webidl_dict",
+      "assert(op_webidl_dict({name: 'x', kind: 'foo-bar'}) == 'x|1|FooBar')",
+    )?;
+    run_test2(
+      1,
+      "op_webidl_dict",
+      "assert(op_webidl_dict({name: 'x', count: 3, kind: 'baz'}) == 'x|3|Qux')",
+    )?;
+    run_test2(
+      1,
+      "op_webidl_dict",
+      "try { op_webidl_dict({}); assert(false) } catch (e) { assert(e instanceof TypeError); assertErrorContains(e, \"'name'\") }",
+    )?;
+    run_test2(
+      1,
+      "op_webidl_dict",
+      "try { op_webidl_dict(); assert(false) } catch (e) { assert(e instanceof TypeError); assertErrorContains(e, \"'name'\") }",
+    )?;
+    run_test2(
+      1,
+      "op_webidl_dict",
+      "try { op_webidl_dict({name: 'x', kind: 'nope'}); assert(false) } catch (e) { assert(e instanceof TypeError); assertErrorContains(e, 'nope') }",
+    )?;
+    Ok(())
+  }
+
+  #[tokio::test(flavor = "current_thread")]
+  pub async fn test_op_webidl_async() -> Result<(), Box<dyn std::error::Error>>
+  {
+    run_async_test(
+      1,
+      "op_webidl_async",
+      "assert(await op_webidl_async(5) == '5')",
+    )
+    .await?;
+    run_async_test(
+      1,
+      "op_webidl_async",
+      "try { await op_webidl_async(Symbol()); assert(false) } catch (e) { assert(e instanceof TypeError); assertErrorContains(e, \"Failed to execute 'op_webidl_async': Argument 1\") }",
+    )
+    .await?;
     Ok(())
   }
 

@@ -1,0 +1,255 @@
+impl<'a> ::deno_core::webidl::WebIdlConverter<'a> for Dictionary {
+    type Options = ();
+    fn convert<C>(
+        __scope: &mut ::deno_core::v8::HandleScope<'a>,
+        __value: ::deno_core::v8::Local<'a, ::deno_core::v8::Value>,
+        __prefix: ::std::borrow::Cow<'static, str>,
+        __context: C,
+        _options: &Self::Options,
+    ) -> ::std::result::Result<Self, ::deno_core::webidl::WebIdlError>
+    where
+        C: Fn() -> ::std::borrow::Cow<'static, str>,
+    {
+        let __object = ::deno_core::webidl::dictionary_object(
+            __value,
+            __prefix.clone(),
+            &__context,
+        )?;
+        let __field_1 = {
+            let __member_context_1 = || {
+                ::std::borrow::Cow::Owned(
+                    ::std::format!("'baz' of 'Dictionary' ({})", __context()),
+                )
+            };
+            match ::deno_core::webidl::dictionary_member(
+                __scope,
+                __object,
+                "baz",
+                __prefix.clone(),
+                &__member_context_1,
+            )? {
+                ::std::option::Option::Some(__value) => {
+                    let __options: <u32 as ::deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::Options = ::std::default::Default::default();
+                    <u32 as ::deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::convert(
+                        __scope,
+                        __value,
+                        __prefix.clone(),
+                        &__member_context_1,
+                        &__options,
+                    )?
+                }
+                ::std::option::Option::None => 5,
+            }
+        };
+        let __field_3 = {
+            let __member_context_3 = || {
+                ::std::borrow::Cow::Owned(
+                    ::std::format!("'clamped' of 'Dictionary' ({})", __context()),
+                )
+            };
+            match ::deno_core::webidl::dictionary_member(
+                __scope,
+                __object,
+                "clamped",
+                __prefix.clone(),
+                &__member_context_3,
+            )? {
+                ::std::option::Option::Some(__value) => {
+                    #[allow(clippy::field_reassign_with_default)]
+                    let mut __options: <u8 as ::deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::Options = ::std::default::Default::default();
+                    __options.clamp = true;
+                    <u8 as ::deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::convert(
+                        __scope,
+                        __value,
+                        __prefix.clone(),
+                        &__member_context_3,
+                        &__options,
+                    )?
+                }
+                ::std::option::Option::None => {
+                    return ::std::result::Result::Err(
+                        ::deno_core::webidl::WebIdlError::new(
+                            __prefix.clone(),
+                            &__context,
+                            ::deno_core::webidl::WebIdlErrorKind::DictionaryCannotConvertKey {
+                                converter: "Dictionary",
+                                key: "clamped",
+                            },
+                        ),
+                    );
+                }
+            }
+        };
+        let __field_4 = {
+            let __member_context_4 = || {
+                ::std::borrow::Cow::Owned(
+                    ::std::format!("'maybe' of 'Dictionary' ({})", __context()),
+                )
+            };
+            match ::deno_core::webidl::dictionary_member(
+                __scope,
+                __object,
+                "maybe",
+                __prefix.clone(),
+                &__member_context_4,
+            )? {
+                ::std::option::Option::Some(__value) => {
+                    let __options: <Option<
+                        String,
+                    > as ::deno_core::webidl::WebIdlConverter<'a>>::Options = ::std::default::Default::default();
+                    <Option<
+                        String,
+                    > as ::deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::convert(
+                        __scope,
+                        __value,
+                        __prefix.clone(),
+                        &__member_context_4,
+                        &__options,
+                    )?
+                }
+                ::std::option::Option::None => ::std::option::Option::None,
+            }
+        };
+        let __field_2 = {
+            let __member_context_2 = || {
+                ::std::borrow::Cow::Owned(
+                    ::std::format!("'qux' of 'Dictionary' ({})", __context()),
+                )
+            };
+            match ::deno_core::webidl::dictionary_member(
+                __scope,
+                __object,
+                "qux",
+                __prefix.clone(),
+                &__member_context_2,
+            )? {
+                ::std::option::Option::Some(__value) => {
+                    let __options: <String as ::deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::Options = ::std::default::Default::default();
+                    <String as ::deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::convert(
+                        __scope,
+                        __value,
+                        __prefix.clone(),
+                        &__member_context_2,
+                        &__options,
+                    )?
+                }
+                ::std::option::Option::None => {
+                    return ::std::result::Result::Err(
+                        ::deno_core::webidl::WebIdlError::new(
+                            __prefix.clone(),
+                            &__context,
+                            ::deno_core::webidl::WebIdlErrorKind::DictionaryCannotConvertKey {
+                                converter: "Dictionary",
+                                key: "qux",
+                            },
+                        ),
+                    );
+                }
+            }
+        };
+        let __field_0 = {
+            let __member_context_0 = || {
+                ::std::borrow::Cow::Owned(
+                    ::std::format!("'renamed' of 'Dictionary' ({})", __context()),
+                )
+            };
+            match ::deno_core::webidl::dictionary_member(
+                __scope,
+                __object,
+                "renamed",
+                __prefix.clone(),
+                &__member_context_0,
+            )? {
+                ::std::option::Option::Some(__value) => {
+                    let __options: <u8 as ::deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::Options = ::std::default::Default::default();
+                    <u8 as ::deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::convert(
+                        __scope,
+                        __value,
+                        __prefix.clone(),
+                        &__member_context_0,
+                        &__options,
+                    )?
+                }
+                ::std::option::Option::None => {
+                    return ::std::result::Result::Err(
+                        ::deno_core::webidl::WebIdlError::new(
+                            __prefix.clone(),
+                            &__context,
+                            ::deno_core::webidl::WebIdlErrorKind::DictionaryCannotConvertKey {
+                                converter: "Dictionary",
+                                key: "renamed",
+                            },
+                        ),
+                    );
+                }
+            }
+        };
+        let __field_5 = {
+            let __member_context_5 = || {
+                ::std::borrow::Cow::Owned(
+                    ::std::format!("'type' of 'Dictionary' ({})", __context()),
+                )
+            };
+            match ::deno_core::webidl::dictionary_member(
+                __scope,
+                __object,
+                "type",
+                __prefix.clone(),
+                &__member_context_5,
+            )? {
+                ::std::option::Option::Some(__value) => {
+                    let __options: <String as ::deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::Options = ::std::default::Default::default();
+                    <String as ::deno_core::webidl::WebIdlConverter<
+                        'a,
+                    >>::convert(
+                        __scope,
+                        __value,
+                        __prefix.clone(),
+                        &__member_context_5,
+                        &__options,
+                    )?
+                }
+                ::std::option::Option::None => {
+                    return ::std::result::Result::Err(
+                        ::deno_core::webidl::WebIdlError::new(
+                            __prefix.clone(),
+                            &__context,
+                            ::deno_core::webidl::WebIdlErrorKind::DictionaryCannotConvertKey {
+                                converter: "Dictionary",
+                                key: "type",
+                            },
+                        ),
+                    );
+                }
+            }
+        };
+        ::std::result::Result::Ok(Self {
+            foo_bar: __field_0,
+            baz: __field_1,
+            qux: __field_2,
+            clamped: __field_3,
+            maybe: __field_4,
+            r#type: __field_5,
+        })
+    }
+}

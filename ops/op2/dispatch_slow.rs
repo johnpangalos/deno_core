@@ -39,9 +39,13 @@ pub(crate) fn generate_dispatch_slow_call(
   let mut args = TokenStream::new();
   let mut deferred = TokenStream::new();
 
+  let first_input_index = input_index;
   for (index, arg) in signature.args.iter().enumerate() {
-    let arg_mapped = from_arg(generator_state, index, arg, &signature.ret_val)
-      .map_err(|s| V8SignatureMappingError::NoArgMapping(s, arg.clone()))?;
+    // The 1-based position the caller sees, which skips the promise id that async ops take first.
+    let position = input_index - first_input_index + 1;
+    let arg_mapped =
+      from_arg(generator_state, index, position, arg, &signature.ret_val)
+        .map_err(|s| V8SignatureMappingError::NoArgMapping(s, arg.clone()))?;
     if arg.is_virtual() {
       deferred.extend(arg_mapped);
     } else {
@@ -355,6 +359,7 @@ pub fn extract_arg(
 pub fn from_arg(
   mut generator_state: &mut GeneratorState,
   index: usize,
+  position: usize,
   arg: &Arg,
   ret_val: &RetVal,
 ) -> Result<TokenStream, V8MappingError> {
@@ -411,6 +416,7 @@ pub fn from_arg(
       let some = from_arg(
         generator_state,
         index,
+        position,
         &Arg::Numeric(*numeric, *flag),
         ret_val,
       )?;
@@ -639,6 +645,25 @@ pub fn from_arg(
       let throw_exception = throw_type_error_string(generator_state, &err)?;
       quote! {
         let #arg_ident = match <#ty as deno_core::FromV8>::from_v8(&mut #scope, #arg_ident) {
+          Ok(t) => t,
+          Err(#err) => {
+            #throw_exception;
+          }
+        };
+      }
+    }
+    Arg::WebIDL(ty) => {
+      *needs_scope = true;
+      let ty =
+        syn::parse_str::<syn::Type>(ty).expect("Failed to reparse webidl type");
+      let scope = scope.clone();
+      let err = format_ident!("{}_err", arg_ident);
+      let throw_exception = throw_type_error_string(generator_state, &err)?;
+      // The prefix and context match the messages WebIDL conversion errors use in browsers.
+      let prefix = format!("Failed to execute '{}'", generator_state.op_name);
+      let context = format!("Argument {position}");
+      quote! {
+        let #arg_ident = match <#ty as deno_core::webidl::WebIdlConverter>::convert(&mut #scope, #arg_ident, #prefix.into(), || std::borrow::Cow::Borrowed(#context), &Default::default()) {
           Ok(t) => t,
           Err(#err) => {
             #throw_exception;

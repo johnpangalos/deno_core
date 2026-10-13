@@ -91,6 +91,43 @@ over if the parameters are compatible. This is useful for a function that takes
 any buffer type in the slow path and wishes to use the very fast typed `u8`
 buffer for the fast path.
 
+## `#[webidl]`
+
+`#[webidl]` converts an argument with the WebIDL type mapping that browser Web
+APIs use, through the `deno_core::webidl::WebIdlConverter` trait. It works on any
+argument type that implements the trait, including types that `op2` can also take
+natively, such as `String`, `u32`, `Option<String>` or `Vec<u32>`. A missing
+argument is `undefined`. A failed conversion throws a JavaScript `TypeError`
+without calling the op, with a message such as
+`Failed to execute 'op_xyz': Argument 2 is not a finite number`. Ops with
+`#[webidl]` arguments are never fastcalled, and `#[webidl]` is not allowed on a
+return value.
+
+Dictionaries and enumerations get the trait from `#[derive(WebIDL)]`:
+
+```rust,ignore
+#[derive(WebIDL)]
+#[webidl(dictionary)]
+struct OpenOptions {
+  #[webidl(required)]
+  name: String,
+  #[webidl(default = 1)]
+  count: u32,
+  kind: Option<Kind>,
+}
+
+#[derive(WebIDL)]
+#[webidl(enum)]
+enum Kind {
+  FooBar, // "foo-bar"
+  #[webidl(rename = "baz")]
+  Qux,
+}
+
+#[op2]
+fn op_open(#[webidl] options: OpenOptions) {}
+```
+
 # Parameters
 
 <!-- START ARGS -->
@@ -584,6 +621,20 @@ any
 any
 </td><td>
 ⚠️ May be slow.
+</td></tr>
+<tr>
+<td>
+
+```text
+#[webidl] T
+```
+
+</td><td>
+
+</td><td>
+any
+</td><td>
+Converted per WebIDL, see `deno_core::webidl`. Never fastcalled.
 </td></tr>
 <tr>
 <td>
